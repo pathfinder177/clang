@@ -18,10 +18,27 @@ void list_free(List* self); // deallocates list
 void list_push_front(List* self, int value);
 int list_pop_front(List* self);
 struct Node* list_find(List* self, int value); // NULL if not found
-// void list_erase(List* self, struct Node* node);
+void list_erase_after(List* self, struct Node* node);
 // void list_merge_to_back(List* self, List* other);
 // void list_merge_to_front(List* self, List* other);
 // void list_splice_after(List* self, struct Node* after, List* other);
+
+void list_erase_after(List* self, struct Node* node) {
+    if (self -> head == NULL) {
+        printf("Can not ERASE_AFTER: list is empty\n");
+        exit(EXIT_FAILURE);
+    }
+    else if(node -> next == NULL) {
+        printf("Can not ERASE_AFTER: your node is the last in list\n");
+        exit(EXIT_FAILURE);
+    }
+
+    struct Node *p_node_to_erase = node -> next;
+    node -> next = p_node_to_erase -> next;
+
+    free((void *) p_node_to_erase);
+
+}
 
 struct Node* list_find(List* self, int value) {
     if (self -> head == NULL) {
@@ -115,7 +132,9 @@ int main() {
     list_push_front(&list, 2);
     list_push_front(&list, 1);
 
-    struct Node* p_found_node_value = list_find(&list, 3);
+    struct Node* p_found_node_value = list_find(&list, 1);
+
+    list_erase_after(&list, p_found_node_value);
 
     int i_val_1 = list_pop_front(&list);
     int i_val_2 = list_pop_front(&list);
