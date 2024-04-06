@@ -42,29 +42,27 @@ struct Node* list_find(List* self, int value) {
 }
 
 int list_pop_front(List* self) {
+    int head_data;
+    struct Node *p_node_after_head;
+
     if (self -> head == NULL) {
         printf("Can not POP: list is empty\n");
         exit(EXIT_FAILURE);
     }
 
-    int head_data = self -> head -> data;
+    head_data = self -> head -> data;
+    p_node_after_head = self -> head -> next;
 
-    if(self -> head -> next == NULL) {
-        free((void *) self -> head);
+    free((void *) self -> head);
+    self -> head = p_node_after_head;
 
-        return head_data;
-    }
-    else {
-        struct Node *p_node_after_head = self -> head -> next;
-        free((void *) self -> head);
-        self -> head = p_node_after_head;
-
-        return head_data;
-    }
+    return head_data;
 }
+
 
 //Delete only Node(s) from memory
 void list_free(List* self) {
+
     struct Node *p_node, *p_node_next;
     p_node = p_node_next = self -> head;
 
