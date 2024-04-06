@@ -19,10 +19,39 @@ void list_push_front(List* self, int value);
 int list_pop_front(List* self);
 struct Node* list_find(List* self, int value); // NULL if not found
 void list_erase_after(List* self, struct Node* node);
-// void list_merge_to_back(List* self, List* other);
+void list_append(List* self, int value);
+void list_merge_to_back(List* self, List* other);
 // void list_merge_to_front(List* self, List* other);
 // void list_splice_after(List* self, struct Node* after, List* other);
 
+void list_append(List* self, int value) {
+    struct Node *p_new_node = (struct Node *) malloc(sizeof(struct Node));
+
+    if (p_new_node == NULL) {
+        printf("Memory allocation failed for Node\n");
+        exit(EXIT_FAILURE);
+    }
+
+    p_new_node -> data = value;
+
+    struct Node *p_node_before = self -> head;
+    while(p_node_before -> next) {
+        p_node_before = p_node_before -> next;
+    }
+
+    p_node_before -> next = p_new_node;
+
+}
+
+// void list_merge_to_back(List* self, List* other) {
+//     if (self -> head == NULL && other -> head == NULL) {
+//         printf("Can not MERGE_TO_BACK: both lists are empty\n");
+//         exit(EXIT_FAILURE);
+//     }
+
+
+
+// }
 
 void list_erase_after(List* self, struct Node* node) {
     if (self -> head == NULL) {
@@ -35,8 +64,8 @@ void list_erase_after(List* self, struct Node* node) {
     }
 
     struct Node *p_node_to_erase = node -> next;
-
     node -> next = p_node_to_erase -> next;
+
     free((void *) p_node_to_erase);
 
 }
@@ -60,14 +89,16 @@ struct Node* list_find(List* self, int value) {
 }
 
 int list_pop_front(List* self) {
+    int head_data;
+    struct Node *p_node_after_head;
 
     if (self -> head == NULL) {
         printf("Can not POP: list is empty\n");
         exit(EXIT_FAILURE);
     }
 
-    int head_data = head_data = self -> head -> data;
-    struct Node *p_node_after_head = self -> head -> next;
+    head_data = self -> head -> data;
+    p_node_after_head = self -> head -> next;
 
     free((void *) self -> head);
     self -> head = p_node_after_head;
@@ -125,6 +156,7 @@ int main() {
     list_push_front(&list, 3);
     list_push_front(&list, 2);
     list_push_front(&list, 1);
+    list_append(&list, 4);
 
     list_push_front(&other_list, 6);
     list_push_front(&other_list, 5);
@@ -136,6 +168,7 @@ int main() {
 
     int i_val_1 = list_pop_front(&list);
     int i_val_2 = list_pop_front(&list);
+    int i_val_3 = list_pop_front(&list);
 
     list_free(&list);
 
