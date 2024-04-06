@@ -43,15 +43,18 @@ void list_append(List* self, int value) {
 
 }
 
-// void list_merge_to_back(List* self, List* other) {
-//     if (self -> head == NULL && other -> head == NULL) {
-//         printf("Can not MERGE_TO_BACK: both lists are empty\n");
-//         exit(EXIT_FAILURE);
-//     }
+void list_merge_to_back(List* self, List* other) {
+    if (self -> head == NULL && other -> head == NULL) {
+        printf("Can not MERGE_TO_BACK: both lists are empty\n");
+        exit(EXIT_FAILURE);
+    }
 
-
-
-// }
+    int value;
+    while(other -> head != NULL) {
+        value = list_pop_front(other);
+        list_append(self, value);
+    }
+}
 
 void list_erase_after(List* self, struct Node* node) {
     if (self -> head == NULL) {
@@ -89,16 +92,13 @@ struct Node* list_find(List* self, int value) {
 }
 
 int list_pop_front(List* self) {
-    int head_data;
-    struct Node *p_node_after_head;
-
     if (self -> head == NULL) {
         printf("Can not POP: list is empty\n");
         exit(EXIT_FAILURE);
     }
 
-    head_data = self -> head -> data;
-    p_node_after_head = self -> head -> next;
+    int head_data = self -> head -> data;
+    struct Node *p_node_after_head = self -> head -> next;
 
     free((void *) self -> head);
     self -> head = p_node_after_head;
@@ -109,7 +109,6 @@ int list_pop_front(List* self) {
 
 //Delete only Node(s) from memory
 void list_free(List* self) {
-
     struct Node *p_node, *p_node_next;
     p_node = p_node_next = self -> head;
 
@@ -121,9 +120,9 @@ void list_free(List* self) {
 }
 
 void list_push_front(List* self, int value) {
-    struct Node *p_new_node = (struct Node *) malloc(sizeof(struct Node));
+    struct Node *p_new_node;
 
-    if (p_new_node == NULL) {
+    if ((p_new_node = (struct Node *) malloc(sizeof(struct Node))) == NULL) {
         printf("Memory allocation failed for Node\n");
         exit(EXIT_FAILURE);
     }
@@ -156,11 +155,13 @@ int main() {
     list_push_front(&list, 3);
     list_push_front(&list, 2);
     list_push_front(&list, 1);
-    list_append(&list, 4);
+    // list_append(&list, 4);
 
     list_push_front(&other_list, 6);
     list_push_front(&other_list, 5);
     list_push_front(&other_list, 4);
+
+    list_merge_to_back(&list, &other_list);
 
     struct Node* p_found_node_value = list_find(&list, 1);
 
