@@ -21,8 +21,22 @@ struct Node* list_find(List* self, int value); // NULL if not found
 void list_erase_after(List* self, struct Node* node);
 void list_append(List* self, int value);
 void list_merge_to_back(List* self, List* other);
-// void list_merge_to_front(List* self, List* other);
+void list_merge_to_front(List* self, List* other);
 // void list_splice_after(List* self, struct Node* after, List* other);
+
+void list_merge_to_front(List* self, List* other) {
+    if (self -> head == NULL && other -> head == NULL) {
+        printf("Can not MERGE_TO_FRONT: both lists are empty\n");
+        exit(EXIT_FAILURE);
+    }
+
+    int value;
+    while(other -> head != NULL) {
+        value = list_pop_front(other);
+        list_push_front(self, value);
+    }
+
+}
 
 void list_append(List* self, int value) {
     struct Node *p_new_node = (struct Node *) malloc(sizeof(struct Node));
@@ -155,13 +169,13 @@ int main() {
     list_push_front(&list, 3);
     list_push_front(&list, 2);
     list_push_front(&list, 1);
-    // list_append(&list, 4);
 
     list_push_front(&other_list, 6);
     list_push_front(&other_list, 5);
     list_push_front(&other_list, 4);
 
-    list_merge_to_back(&list, &other_list);
+    // list_merge_to_back(&list, &other_list);
+    list_merge_to_front(&list, &other_list);
 
     struct Node* p_found_node_value = list_find(&list, 1);
 
