@@ -23,6 +23,7 @@ void list_erase_after(List* self, struct Node* node);
 // void list_merge_to_front(List* self, List* other);
 // void list_splice_after(List* self, struct Node* after, List* other);
 
+
 void list_erase_after(List* self, struct Node* node) {
     if (self -> head == NULL) {
         printf("Can not ERASE_AFTER: list is empty\n");
@@ -34,8 +35,8 @@ void list_erase_after(List* self, struct Node* node) {
     }
 
     struct Node *p_node_to_erase = node -> next;
-    node -> next = p_node_to_erase -> next;
 
+    node -> next = p_node_to_erase -> next;
     free((void *) p_node_to_erase);
 
 }
@@ -59,16 +60,14 @@ struct Node* list_find(List* self, int value) {
 }
 
 int list_pop_front(List* self) {
-    int head_data;
-    struct Node *p_node_after_head;
 
     if (self -> head == NULL) {
         printf("Can not POP: list is empty\n");
         exit(EXIT_FAILURE);
     }
 
-    head_data = self -> head -> data;
-    p_node_after_head = self -> head -> next;
+    int head_data = head_data = self -> head -> data;
+    struct Node *p_node_after_head = self -> head -> next;
 
     free((void *) self -> head);
     self -> head = p_node_after_head;
@@ -99,15 +98,9 @@ void list_push_front(List* self, int value) {
     }
 
     p_new_node -> data = value;
+    p_new_node -> next = self -> head;
 
-    if (self -> head == NULL) {
-        self -> head = p_new_node;
-    }
-    else {
-        p_new_node -> next = self -> head;
-        self -> head = p_new_node;
-    }
-
+    self -> head = p_new_node;
 }
 
 //Return structure created on the stack
@@ -127,10 +120,15 @@ int main() {
     */
 
     List list = list_create();
+    List other_list = list_create();
 
     list_push_front(&list, 3);
     list_push_front(&list, 2);
     list_push_front(&list, 1);
+
+    list_push_front(&other_list, 6);
+    list_push_front(&other_list, 5);
+    list_push_front(&other_list, 4);
 
     struct Node* p_found_node_value = list_find(&list, 1);
 
@@ -138,7 +136,6 @@ int main() {
 
     int i_val_1 = list_pop_front(&list);
     int i_val_2 = list_pop_front(&list);
-    int i_val_3 = list_pop_front(&list);
 
     list_free(&list);
 
