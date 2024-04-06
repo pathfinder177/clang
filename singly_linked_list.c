@@ -29,13 +29,13 @@ struct Node* list_find(List* self, int value) {
         exit(EXIT_FAILURE);
     }
 
-    struct Node *node = self -> head;
+    struct Node *p_node = self -> head;
 
-    while (node) {
-        if (node -> data == value) {
-            return node;
+    while (p_node) {
+        if (p_node -> data == value) {
+            return p_node;
         }
-        node = node -> next;
+        p_node = p_node -> next;
     }
 
     return NULL;
@@ -55,9 +55,9 @@ int list_pop_front(List* self) {
         return head_data;
     }
     else {
-        struct Node *after_head = self -> head -> next;
+        struct Node *p_node_after_head = self -> head -> next;
         free((void *) self -> head);
-        self -> head = after_head;
+        self -> head = p_node_after_head;
 
         return head_data;
     }
@@ -65,32 +65,32 @@ int list_pop_front(List* self) {
 
 //Delete only Node(s) from memory
 void list_free(List* self) {
-    struct Node *node, *node_next;
-    node = node_next = self -> head;
+    struct Node *p_node, *p_node_next;
+    p_node = p_node_next = self -> head;
 
-    while (node) {
-        node_next = node -> next;
-        free((void *) node);
-        node = node_next;
+    while (p_node) {
+        p_node_next = p_node -> next;
+        free((void *) p_node);
+        p_node = p_node_next;
     }
 }
 
 void list_push_front(List* self, int value) {
-    struct Node *new_node = (struct Node *) malloc(sizeof(struct Node));
+    struct Node *p_new_node = (struct Node *) malloc(sizeof(struct Node));
 
-    if (new_node == NULL) {
+    if (p_new_node == NULL) {
         printf("Memory allocation failed for Node\n");
         exit(EXIT_FAILURE);
     }
 
-    new_node -> data = value;
+    p_new_node -> data = value;
 
     if (self -> head == NULL) {
-        self -> head = new_node;
+        self -> head = p_new_node;
     }
     else {
-        new_node -> next = self -> head;
-        self -> head = new_node;
+        p_new_node -> next = self -> head;
+        self -> head = p_new_node;
     }
 
 }
