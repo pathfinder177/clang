@@ -16,12 +16,34 @@ typedef struct
 List list_create(); // returns empty list
 void list_free(List* self); // deallocates list
 void list_push_front(List* self, int value);
-// int list_pop_front(List* self);
+int list_pop_front(List* self);
 // struct Node* list_find(List* self, int value); // NULL if not found
 // void list_erase(List* self, struct Node* node);
 // void list_merge_to_back(List* self, List* other);
 // void list_merge_to_front(List* self, List* other);
 // void list_splice_after(List* self, struct Node* after, List* other);
+
+int list_pop_front(List* self) {
+    if (self -> head == NULL) {
+        printf("Can not POP: list is empty\n");
+        exit(EXIT_FAILURE);
+    }
+
+    int head_data = self -> head -> data;
+
+    if(self -> head -> next == NULL) {
+        free((void *) self -> head);
+
+        return head_data;
+    }
+    else {
+        struct Node *after_head = self -> head -> next;
+        free((void *) self -> head);
+        self -> head = after_head;
+
+        return head_data;
+    }
+}
 
 //Delete only Node(s) from memory
 void list_free(List* self) {
@@ -77,7 +99,11 @@ int main() {
     list_push_front(&list, 2);
     list_push_front(&list, 1);
 
-    list_free(&list);
+    int i_val_1 = list_pop_front(&list);
+    int i_val_2 = list_pop_front(&list);
+    int i_val_3 = list_pop_front(&list);
+
+    // list_free(&list);
 
     return 0;
 }
