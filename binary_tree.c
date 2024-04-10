@@ -7,7 +7,7 @@ https://runestone.academy/ns/books/published/pythonds3/Trees/Implementation.html
 #include <stdlib.h>
 
 struct Node {
-    int val;
+    int data;
     struct Node* l_node;
     struct Node* r_node;
 };
@@ -18,9 +18,20 @@ typedef struct {
 
 Tree tree_create(); // returns empty binary tree
 // void tree_free(Tree* self); deallocates tree
-void tree_inorder_traverse(struct Node* self);
-void tree_preorder_traverse(struct Node* self);
-void tree_postorder_traverse(struct Node* self);
+void tree_inorder_traverse(struct Node*);
+void tree_preorder_traverse(struct Node*);
+void tree_postorder_traverse(struct Node*);
+struct Node* tree_create_node(int);
+
+struct Node* tree_create_node(int value) {
+  struct Node* newNode = (struct Node*)malloc(sizeof(struct Node));
+
+  newNode->data = value;
+  newNode->l_node = NULL;
+  newNode->r_node = NULL;
+
+  return newNode;
+}
 
 void tree_postorder_traverse(struct Node* self) {
 
@@ -32,11 +43,11 @@ void tree_postorder_traverse(struct Node* self) {
         tree_postorder_traverse(self->r_node);
     }
 
-    printf("%d\n", self->val);
+    printf("%d\n", self->data);
 }
 
 void tree_preorder_traverse(struct Node* self) {
-    printf("%d\n", self->val);
+    printf("%d\n", self->data);
 
     if (self->l_node) {
         tree_preorder_traverse(self->l_node);
@@ -56,12 +67,12 @@ void tree_inorder_traverse(struct Node* self) {
         if l_node
             rec(l_node)
         else
-            print val
-        print val
+            print data
+        print data
         if r_node
             rec(r_node)
         else
-            print val
+            print data
     final state:
         all nodes are visited
     */
@@ -70,7 +81,7 @@ void tree_inorder_traverse(struct Node* self) {
         tree_inorder_traverse(self->l_node);
     }
 
-    printf("%d\n", self->val);
+    printf("%d\n", self->data);
 
     if (self->r_node) {
         tree_inorder_traverse(self->r_node);
