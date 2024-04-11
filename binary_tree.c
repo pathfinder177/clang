@@ -1,15 +1,19 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define QUEUE_P_ARRAY_SIZE 10
+
 struct Node {
     int data;
     struct Node* l_node;
     struct Node* r_node;
 };
 
+
 typedef struct {
     struct Node* root;
 } Tree;
+
 
 Tree tree_create(); // returns empty binary tree
 struct Node* tree_create_node(int);
@@ -34,17 +38,22 @@ struct Node* tree_dfs_search(struct Node*, int);
 struct Node* tree_bfs_search(struct Node*, int);
 
 struct Node* tree_bfs_search(struct Node* self, int value) {
-    /*
-    base case: value is found OR not
-    rec. step:
+    struct Node *p_array = calloc(QUEUE_P_ARRAY_SIZE, sizeof(struct Node));
+    if(p_array == NULL) {
+        printf("Memory allocation failed.\n");
+        exit(EXIT_FAILURE);
+    }
 
-        if not found: return NULL
-    final state:
-        1. value is returned. algorithm is stopped.
-        2. NULL is returned. all nodes are visited
-    */
+    *p_array = *self;
+    while(p_array) {
+        struct Node n = *p_array;
 
+        if(n.data == value) {
+            return p_array;
+        }
+    }
 
+    return NULL;
 
 }
 
@@ -187,7 +196,7 @@ int main() {
     //use DFS
     //backtracking problem
     // struct Node* n = tree_dfs_search(tree.root, 7);
-    struct Node* n = tree_bfs_search(tree.root, 7);
+    struct Node* n = tree_bfs_search(tree.root, 1);
 
 
 
