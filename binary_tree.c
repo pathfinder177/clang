@@ -35,10 +35,16 @@ struct Node* tree_bfs_search(struct Node*, int);
 
 struct Node* tree_bfs_search(struct Node* self, int value) {
     /*
-    base case:
+    base case: value is found OR not
     rec. step:
+
+        if not found: return NULL
     final state:
+        1. value is returned. algorithm is stopped.
+        2. NULL is returned. all nodes are visited
     */
+
+
 
 }
 
@@ -57,7 +63,7 @@ struct Node* tree_dfs_search(struct Node* self, int value) {
 
         if not found: return NULL
     final state:
-        1. value is returned. algorithm are stopped.
+        1. value is returned. algorithm is stopped.
         2. NULL is returned. all nodes are visited
     */
 
@@ -143,7 +149,7 @@ void tree_inorder_traverse(struct Node* self) {
 struct Node* tree_create_node(int value) {
     struct Node* new_node;
 
-    if ((new_node == (struct Node*)malloc(sizeof(struct Node))) == NULL) {
+    if ((new_node = (struct Node*)malloc(sizeof(struct Node))) == NULL) {
         printf("Memory allocation failed.\n");
         exit(EXIT_FAILURE);
     }
@@ -180,7 +186,8 @@ int main() {
 
     //use DFS
     //backtracking problem
-    struct Node* n = tree_dfs_search(tree.root, 7);
+    // struct Node* n = tree_dfs_search(tree.root, 7);
+    struct Node* n = tree_bfs_search(tree.root, 7);
 
 
 
