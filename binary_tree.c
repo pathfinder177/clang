@@ -1,8 +1,3 @@
-/*
-ADT implementation:
-https://runestone.academy/ns/books/published/pythonds3/Trees/Implementation.html
-*/
-
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -17,20 +12,34 @@ typedef struct {
 } Tree;
 
 Tree tree_create(); // returns empty binary tree
-// void tree_free(Tree* self); deallocates tree
+struct Node* tree_create_node(int);
+void tree_free(Tree* self); // deallocates tree
+
+int tree_get_node_val(struct Node*);
+void tree_set_node_val(struct Node*, int);
+
+struct Node* tree_get_left_child(struct Node*);
+void tree_insert_left(struct Node*, int);
+
+struct Node* tree_get_right_child(struct Node*);
+void tree_insert_right(struct Node*, int);
+
+struct Node* tree_search(struct Node*, int);
+
+//actually not the part of the interface, part of learning
 void tree_inorder_traverse(struct Node*);
 void tree_preorder_traverse(struct Node*);
 void tree_postorder_traverse(struct Node*);
-struct Node* tree_create_node(int);
+
 
 struct Node* tree_create_node(int value) {
-  struct Node* newNode = (struct Node*)malloc(sizeof(struct Node));
+  struct Node* new_node = (struct Node*)malloc(sizeof(struct Node));
 
-  newNode->data = value;
-  newNode->l_node = NULL;
-  newNode->r_node = NULL;
+  new_node->data = value;
+  new_node->l_node = NULL;
+  new_node->r_node = NULL;
 
-  return newNode;
+  return new_node;
 }
 
 void tree_postorder_traverse(struct Node* self) {
@@ -109,6 +118,10 @@ int main() {
     struct Node node_1 = {1, &node_2, &node_3};
 
     tree.root = &node_1;
+
+    //use DFS
+    //backtracking problem
+    struct Node* n = tree_search(tree.root, 5);
 
     // 4,2,5,1,6,3,7,
     // tree_inorder_traverse(tree.root);
