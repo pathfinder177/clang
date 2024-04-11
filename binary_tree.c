@@ -31,6 +31,16 @@ void tree_preorder_traverse(struct Node*);
 void tree_postorder_traverse(struct Node*);
 
 struct Node* tree_dfs_search(struct Node*, int);
+struct Node* tree_bfs_search(struct Node*, int);
+
+struct Node* tree_bfs_search(struct Node* self, int value) {
+    /*
+    base case:
+    rec. step:
+    final state:
+    */
+
+}
 
 struct Node* tree_dfs_search(struct Node* self, int value) {
     /*
@@ -131,13 +141,18 @@ void tree_inorder_traverse(struct Node* self) {
 }
 
 struct Node* tree_create_node(int value) {
-  struct Node* new_node = (struct Node*)malloc(sizeof(struct Node));
+    struct Node* new_node;
 
-  new_node->data = value;
-  new_node->l_node = NULL;
-  new_node->r_node = NULL;
+    if ((new_node == (struct Node*)malloc(sizeof(struct Node))) == NULL) {
+        printf("Memory allocation failed.\n");
+        exit(EXIT_FAILURE);
+    }
 
-  return new_node;
+    new_node->data = value;
+    new_node->l_node = NULL;
+    new_node->r_node = NULL;
+
+    return new_node;
 }
 
 
