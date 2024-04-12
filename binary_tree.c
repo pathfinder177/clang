@@ -31,10 +31,10 @@ struct Node* tree_dfs_search(struct Node*, int);
 struct Node* tree_bfs_search(struct Node*, int);
 
 struct Node* tree_bfs_search(struct Node* self, int value) {
+    struct Node *n = NULL;
     enQueue(self);
 
-    while(items) {
-        struct Node *n = deQueue();
+    while((n = deQueue()) != NULL) {
 
         if(n->data==value) {
             return n;
@@ -46,6 +46,8 @@ struct Node* tree_bfs_search(struct Node* self, int value) {
             enQueue(n->r_node);
         }
     }
+
+    return n;
 
 }
 
