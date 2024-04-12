@@ -1,13 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include "node.h"
 #include "bfs_queue.h"
-
-struct Node {
-    int data;
-    struct Node* l_node;
-    struct Node* r_node;
-};
-
 
 typedef struct {
     struct Node* root;

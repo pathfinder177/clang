@@ -1,11 +1,8 @@
 #include <stdio.h>
+#include "node.h"
+
 #define SIZE 10
 
-struct Node {
-    int data;
-    struct Node* l_node;
-    struct Node* r_node;
-};
 
 void enQueue(struct Node *);
 struct Node* deQueue();
