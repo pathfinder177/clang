@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-
-#define QUEUE_P_ARRAY_SIZE 10
+#include "bfs_queue.h"
 
 struct Node {
     int data;
@@ -38,22 +37,21 @@ struct Node* tree_dfs_search(struct Node*, int);
 struct Node* tree_bfs_search(struct Node*, int);
 
 struct Node* tree_bfs_search(struct Node* self, int value) {
-    struct Node *p_array = calloc(QUEUE_P_ARRAY_SIZE, sizeof(struct Node));
-    if(p_array == NULL) {
-        printf("Memory allocation failed.\n");
-        exit(EXIT_FAILURE);
-    }
+    enQueue(self);
 
-    *p_array = *self;
-    while(p_array) {
-        struct Node n = *p_array;
+    while(items) {
+        struct Node *n = deQueue();
 
-        if(n.data == value) {
-            return p_array;
+        if(n->data==value) {
+            return n;
+        }
+        if(n->l_node) {
+            enQueue(n->l_node);
+        }
+        if(n->r_node) {
+            enQueue(n->r_node);
         }
     }
-
-    return NULL;
 
 }
 
@@ -196,9 +194,7 @@ int main() {
     //use DFS
     //backtracking problem
     // struct Node* n = tree_dfs_search(tree.root, 7);
-    struct Node* n = tree_bfs_search(tree.root, 1);
-
-
+    struct Node* n = tree_bfs_search(tree.root, 7);
 
     // 4,2,5,1,6,3,7,
     // tree_inorder_traverse(tree.root);
