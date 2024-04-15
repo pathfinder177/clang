@@ -9,12 +9,17 @@ typedef struct {
 
 
 Tree tree_create(); // returns empty binary tree
-struct Node* tree_create_node(int);
 // void tree_free(Tree* self); // deallocates tree
+
+struct Node* tree_create_node(int);
+void tree_delete_node(Tree*, struct Node*);
+
 int tree_get_node_val(struct Node*);
 void tree_set_node_val(struct Node*, int);
+
 struct Node* tree_get_left_child(struct Node*);
 struct Node* tree_get_right_child(struct Node*);
+
 void tree_insert_left(struct Node*, int);
 void tree_insert_right(struct Node*, int);
 
@@ -23,7 +28,7 @@ void tree_inorder_traverse(struct Node*);
 void tree_preorder_traverse(struct Node*);
 void tree_postorder_traverse(struct Node*);
 
-struct Node* tree_dfs_search(struct Node*, int);
+struct Node* tree_dfs_search(struct Node*, int); //inorder traversal
 struct Node* tree_bfs_search(struct Node*, int);
 
 int tree_get_node_val(struct Node* self) {
@@ -70,7 +75,6 @@ void tree_insert_left(struct Node* self, int value) {
     if(self->l_node) {
         new_node->l_node=self->l_node;
     }
-
     self->l_node=new_node;
 }
 
@@ -100,9 +104,7 @@ struct Node* tree_bfs_search(struct Node* self, int value) {
             enQueue(n->r_node);
         }
     }
-
     return n;
-
 }
 
 struct Node* tree_dfs_search(struct Node* self, int value) {
@@ -130,14 +132,12 @@ struct Node* tree_dfs_search(struct Node* self, int value) {
         n = self;
         return n;
     }
-
     if(self->l_node) {
         n = tree_dfs_search(self->l_node, value);
         if((n) && n->data == value) {
             return n;
         }
     }
-
     if(self->r_node) {
         n = tree_dfs_search(self->r_node, value);
         if((n) && n->data == value) {
@@ -149,11 +149,9 @@ struct Node* tree_dfs_search(struct Node* self, int value) {
 }
 
 void tree_postorder_traverse(struct Node* self) {
-
     if (self->l_node) {
         tree_postorder_traverse(self->l_node);
     }
-
     if (self->r_node) {
         tree_postorder_traverse(self->r_node);
     }
@@ -171,7 +169,6 @@ void tree_preorder_traverse(struct Node* self) {
     if (self->r_node) {
         tree_preorder_traverse(self->r_node);
     }
-
 }
 
 void tree_inorder_traverse(struct Node* self) {
@@ -203,6 +200,34 @@ void tree_inorder_traverse(struct Node* self) {
     }
 }
 
+void tree_delete_node(Tree* tree, struct Node* self) {
+    if(self->l_node == NULL && self->r_node == NULL) {
+        free(self);
+    }
+    //find node before self
+    else if(self->l_node && self->r_node == NULL) {
+        //change self by l_node
+    }
+    else if(self->l_node==NULL && self->r_node) {
+        //change self by r_node
+    }
+    else {
+        if (self->l_node->r_node) {
+            //find last right vertice(where r_node==NULL)
+            //if l_r_v->left
+                //l_r_v=l_r_v->left;
+                //self=l_r_v;
+                //free(self);
+            //else
+            //self=l_r_v;
+            //free(self);
+        }
+        else {
+            //change self by l_node
+        }
+    }
+}
+
 struct Node* tree_create_node(int value) {
     struct Node* new_node;
 
@@ -230,51 +255,57 @@ int main() {
     // Unordered Binary Tree
     Tree tree = tree_create();
 
-    struct Node node_6 = {6, NULL, NULL};
-    struct Node node_7 = {7, NULL, NULL};
-    struct Node node_3 = {3, &node_6, &node_7};
+    //Have doubts where is the best place to create root node
+    tree.root = tree_create_node(9);
 
-    struct Node node_4 = {4, NULL, NULL};
-    struct Node node_5 = {5, NULL, NULL};
-    struct Node node_2 = {2, &node_4, &node_5};
+    //node_val = 9
+    int node_val = tree_get_node_val(tree.root);
 
-    struct Node node_1 = {1, &node_2, &node_3};
-
-    tree.root = &node_1;
-
-    // root -> 1 -> 2 -> 4,5
-    //           -> 3 -> 6,7
-
+    tree_set_node_val(tree.root, 1);
     //node_val = 1
-    // int node_val = tree_get_node_val(tree.root);
+    int node_val_after_set = tree_get_node_val(tree.root);
 
-    // root -> 9 -> 2 -> 4,5
-    //           -> 3 -> 6,7
-    // tree_set_node_val(tree.root, 9);
-
-    //l_node = node_2
-    // struct Node* l_node = tree_get_left_child(tree.root);
-    //r_node = node_3
-    // struct Node* r_node = tree_get_right_child(tree.root);
-
-    // root -> 1 -> 9 -> 2 -> 4,5
-    //           -> 3 -> 6,7
+    // root -> 1 -> 9
     tree_insert_left(tree.root, 9);
 
-    // root -> 1 -> 9 -> 2 -> 4,5
-    //           -> 0 -> 3 -> 6,7
+    // root -> 1 -> 9
+    //           -> 0
     tree_insert_right(tree.root, 0);
 
-    // 4,2,5,1,6,3,7,
+    //l_node = node_9
+    struct Node* l_node = tree_get_left_child(tree.root);
+    //r_node = node_0
+    struct Node* r_node = tree_get_right_child(tree.root);
+
+    // root -> 1 -> 9(l) -> 2(l) -> 4(l), 5(r)
+    //           -> 0(r) -> 3(l) -> 6(l), 7(r)
+    //left subtree
+    struct Node* node_9 = tree_dfs_search(tree.root, 9);
+    tree_insert_left(node_9, 2);
+    struct Node* node_2 = tree_dfs_search(tree.root, 2);
+    tree_insert_left(node_2, 4);
+    tree_insert_right(node_2, 5);
+    //right subtree
+    struct Node* node_0 = tree_dfs_search(tree.root, 0);
+    tree_insert_right(node_0, 3);
+    struct Node* node_3 = tree_dfs_search(tree.root, 3);
+    tree_insert_left(node_3, 6);
+    tree_insert_right(node_3, 7);
+
+    // root -> 1 -> 2(l) -> 4(l), 5(r)
+    //           -> 0(r) -> 6(l), 7(r)
+    tree_delete_node(&tree, node_9);
+    // tree_delete_node(node_3);
+
+    //
     // tree_inorder_traverse(tree.root);
 
-    // 1,2,4,5,3,6,7
+    //
     // tree_preorder_traverse(tree.root);
 
-    // 4,5,2,6,7,3,1
+    //
     // tree_postorder_traverse(tree.root);
 
-    // struct Node* n = tree_dfs_search(tree.root, 7);
     // struct Node* n = tree_bfs_search(tree.root, 7);
 
 
