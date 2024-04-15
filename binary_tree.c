@@ -31,8 +31,7 @@ int tree_get_node_val(struct Node* self) {
         return self->data;
     }
     else {
-        printf("Tree node has no value\n");
-        exit(EXIT_FAILURE);
+        return NULL;
     }
 }
 
@@ -51,8 +50,7 @@ struct Node* tree_get_left_child(struct Node* self) {
         return self->l_node;
     }
     else {
-        printf("Node pointer to left child is NULL\n");
-        exit(EXIT_FAILURE);
+        return NULL;
     }
 }
 
@@ -61,10 +59,15 @@ struct Node* tree_get_right_child(struct Node* self) {
         return self->r_node;
     }
     else {
-        printf("Node pointer to right child is NULL\n");
-        exit(EXIT_FAILURE);
+        return NULL;
     }
 }
+
+void tree_insert_left(struct Node* self, int value) {
+
+}
+
+// void tree_insert_right(struct Node* self, int value);
 
 struct Node* tree_bfs_search(struct Node* self, int value) {
     struct Node *n = NULL;
@@ -228,19 +231,18 @@ int main() {
     //           -> 3 -> 6,7
 
     //node_val = 1
-    int node_val = tree_get_node_val(tree.root);
+    // int node_val = tree_get_node_val(tree.root);
 
     // root -> 9 -> 2 -> 4,5
     //           -> 3 -> 6,7
-    tree_set_node_val(tree.root, 9);
+    // tree_set_node_val(tree.root, 9);
 
     //l_node = node_2
-    struct Node* l_node = tree_get_left_child(tree.root);
+    // struct Node* l_node = tree_get_left_child(tree.root);
     //r_node = node_3
-    struct Node* r_node = tree_get_right_child(tree.root);
+    // struct Node* r_node = tree_get_right_child(tree.root);
 
-    // struct Node* n = tree_dfs_search(tree.root, 7);
-    // struct Node* n = tree_bfs_search(tree.root, 7);
+
 
     // 4,2,5,1,6,3,7,
     // tree_inorder_traverse(tree.root);
@@ -250,6 +252,10 @@ int main() {
 
     // 4,5,2,6,7,3,1
     // tree_postorder_traverse(tree.root);
+
+    // struct Node* n = tree_dfs_search(tree.root, 7);
+    // struct Node* n = tree_bfs_search(tree.root, 7);
+
 
     return 0;
 }
