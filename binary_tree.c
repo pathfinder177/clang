@@ -10,17 +10,13 @@ typedef struct {
 
 Tree tree_create(); // returns empty binary tree
 struct Node* tree_create_node(int);
-void tree_free(Tree* self); // deallocates tree
-
+// void tree_free(Tree* self); // deallocates tree
 int tree_get_node_val(struct Node*);
 void tree_set_node_val(struct Node*, int);
-
 struct Node* tree_get_left_child(struct Node*);
-void tree_insert_left(struct Node*, int);
-
 struct Node* tree_get_right_child(struct Node*);
+void tree_insert_left(struct Node*, int);
 void tree_insert_right(struct Node*, int);
-
 
 //actually not the part of the interface, part of learning
 void tree_inorder_traverse(struct Node*);
@@ -29,6 +25,16 @@ void tree_postorder_traverse(struct Node*);
 
 struct Node* tree_dfs_search(struct Node*, int);
 struct Node* tree_bfs_search(struct Node*, int);
+
+int tree_get_node_val(struct Node* self) {
+    if (self -> data) {
+        return self -> data;
+    }
+    else {
+        printf("Tree node has no value\n");
+        exit(EXIT_FAILURE);
+    }
+}
 
 struct Node* tree_bfs_search(struct Node* self, int value) {
     struct Node *n = NULL;
@@ -187,10 +193,16 @@ int main() {
 
     tree.root = &node_1;
 
-    //use DFS
-    //backtracking problem
+    // Unordered Binary Tree
+    // root -> 1 -> 2 -> 4,5
+    //           -> 3 -> 6,7
+
+    //node_val = 1
+    int node_val = tree_get_node_val(tree.root);
+
+
     // struct Node* n = tree_dfs_search(tree.root, 7);
-    struct Node* n = tree_bfs_search(tree.root, 7);
+    // struct Node* n = tree_bfs_search(tree.root, 7);
 
     // 4,2,5,1,6,3,7,
     // tree_inorder_traverse(tree.root);
