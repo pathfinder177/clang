@@ -31,7 +31,8 @@ int tree_get_node_val(struct Node* self) {
         return self->data;
     }
     else {
-        return NULL;
+        printf("Node has no data.\n");
+        exit(EXIT_FAILURE);
     }
 }
 
@@ -64,10 +65,24 @@ struct Node* tree_get_right_child(struct Node* self) {
 }
 
 void tree_insert_left(struct Node* self, int value) {
+    struct Node* new_node = tree_create_node(value);
 
+    if(self->l_node) {
+        new_node->l_node=self->l_node;
+    }
+
+    self->l_node=new_node;
 }
 
-// void tree_insert_right(struct Node* self, int value);
+void tree_insert_right(struct Node* self, int value) {
+    struct Node* new_node = tree_create_node(value);
+
+    if(self->r_node) {
+        new_node->r_node=self->r_node;
+    }
+
+    self->r_node=new_node;
+}
 
 struct Node* tree_bfs_search(struct Node* self, int value) {
     struct Node *n = NULL;
@@ -242,7 +257,13 @@ int main() {
     //r_node = node_3
     // struct Node* r_node = tree_get_right_child(tree.root);
 
+    // root -> 1 -> 9 -> 2 -> 4,5
+    //           -> 3 -> 6,7
+    tree_insert_left(tree.root, 9);
 
+    // root -> 1 -> 9 -> 2 -> 4,5
+    //           -> 0 -> 3 -> 6,7
+    tree_insert_right(tree.root, 0);
 
     // 4,2,5,1,6,3,7,
     // tree_inorder_traverse(tree.root);
