@@ -29,6 +29,7 @@ void tree_preorder_traverse(struct Node*);
 void tree_postorder_traverse(struct Node*);
 
 struct Node* tree_search_parent(Tree*, struct Node*);
+struct Node* tree_search_last_right_vertice(struct Node*);
 struct Node* tree_dfs_search(struct Node*, int); //inorder traversal
 struct Node* tree_bfs_search(struct Node*, int);
 
@@ -208,7 +209,6 @@ void tree_delete_node(Tree* tree, struct Node* self) {
     if(self->l_node == NULL && self->r_node == NULL) {
         free((void*) self);
     }
-
     else if(parent->l_node && parent->r_node == NULL) {
         if(tree->root == self) {
             tree->root = self->l_node;
@@ -216,7 +216,6 @@ void tree_delete_node(Tree* tree, struct Node* self) {
         else {
             parent->l_node = self->l_node;
         }
-        free((void*) self);
     }
     else if(parent->r_node && parent->l_node == NULL) {
         if(tree->root == self) {
@@ -225,23 +224,43 @@ void tree_delete_node(Tree* tree, struct Node* self) {
         else {
             parent->r_node = self->r_node;
         }
-        free((void*) self);
     }
-    // else {
-        // if (self->l_node->r_node) {
-            //find last right vertice(where r_node==NULL)
-            //if l_r_v->left
-                //l_r_v=l_r_v->left;
-                //self=l_r_v;
-                //free(self);
-            //else
-            //self=l_r_v;
-            //free(self);
-        // }
-        // else {
-            ////change self in node_before by l_node
-        // }
-    // }
+    else {
+        if (self->l_node->r_node) {
+            // find last right vertice(where node->r_node==NULL)
+            struct Node* last_right_vertice = tree_search_last_right_vertice(self->l_node);
+
+            if(last_right_vertice->l_node) {
+                self->l_node->r_node = last_right_vertice->l_node;
+
+                if(self->r_node) {
+                    last_right_vertice->r_node = self->r_node;
+                }
+                else {
+                    last_right_vertice->l_node = NULL;
+                }
+            }
+
+            last_right_vertice->l_node = self->l_node;
+            parent->l_node = last_right_vertice;
+
+            if(tree->root==self) {
+                tree->root = last_right_vertice;
+            }
+        }
+        else {
+            if(tree->root==self && tree->root->r_node) {
+                self->l_node->r_node = self->r_node;
+                tree->root = tree->root->l_node;
+            }
+            else if(parent->r_node)
+            {
+                self->l_node->r_node = self->r_node;
+                parent->l_node = self->l_node;
+            }
+        }
+    }
+    free((void*) self);
 }
 
 struct Node* tree_search_parent(Tree* tree, struct Node* self) {
@@ -282,6 +301,16 @@ struct Node* tree_search_parent(Tree* tree, struct Node* self) {
 
         return parent;
     }
+}
+
+struct Node* tree_search_last_right_vertice(struct Node* left_child) {
+    struct Node* l_r_v = left_child;
+
+    while(l_r_v->r_node) {
+        l_r_v = l_r_v->r_node;
+    }
+
+    return l_r_v;
 }
 
 struct Node* tree_create_node(int value) {
@@ -334,7 +363,10 @@ int main() {
     //r_node = node_0
     struct Node* r_node = tree_get_right_child(tree.root);
 
-    // root -> 1 -> 9(l) -> 2(l) -> 4(l), 5(r)
+    // root -> 9 -> 0(r)
+    tree_delete_node(&tree, tree.root);
+
+    // root -> 1 -> 9(l) -> 2(l) -> 4(l), 5(r) -> 8(l)
     //           -> 0(r) -> 3(l) -> 6(l), 7(r)
     //left subtree
     struct Node* node_9 = tree_dfs_search(tree.root, 9);
@@ -342,6 +374,10 @@ int main() {
     struct Node* node_2 = tree_dfs_search(tree.root, 2);
     tree_insert_left(node_2, 4);
     tree_insert_right(node_2, 5);
+    struct Node* node_5 = tree_dfs_search(tree.root, 5);
+    tree_insert_left(node_5, 8);
+
+
     //right subtree
     struct Node* node_0 = tree_dfs_search(tree.root, 0);
     tree_insert_right(node_0, 3);
@@ -354,10 +390,9 @@ int main() {
     //n_parent_3 = node_0
     struct Node* n_parent_3 = tree_search_parent(&tree, node_3);
 
-    // root -> 1 -> 9(l) -> 4(l), 5(r)
-    //           -> 0(r) -> 6(l), 7(r)
-    // tree_delete_node(&tree, node_2);
-    // tree_delete_node(&tree, node_3);
+    // root -> 5 -> 2(l) -> 4(l), 8(r)
+    //           -> 0(r) -> 3(r) -> 6(l), 7(r)
+    tree_delete_node(&tree, node_9);
 
     //
     // tree_inorder_traverse(tree.root);
