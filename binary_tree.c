@@ -28,6 +28,7 @@ void tree_inorder_traverse(struct Node*);
 void tree_preorder_traverse(struct Node*);
 void tree_postorder_traverse(struct Node*);
 
+struct Node* tree_search_parent(Tree*, struct Node*);
 struct Node* tree_dfs_search(struct Node*, int); //inorder traversal
 struct Node* tree_bfs_search(struct Node*, int);
 
@@ -201,15 +202,19 @@ void tree_inorder_traverse(struct Node* self) {
 }
 
 void tree_delete_node(Tree* tree, struct Node* self) {
+    //if duplicate is encountered: delete first found node
+
     if(self->l_node == NULL && self->r_node == NULL) {
-        free(self);
+        free((void*) self);
     }
     //find node before self
     else if(self->l_node && self->r_node == NULL) {
-        //change self by l_node
+        //if root: change tree.root by l_node
+        //change self in node_before by l_node
     }
     else if(self->l_node==NULL && self->r_node) {
-        //change self by r_node
+        //if root: change tree.root by r_node
+        //change self in node_before by r_node
     }
     else {
         if (self->l_node->r_node) {
@@ -223,8 +228,48 @@ void tree_delete_node(Tree* tree, struct Node* self) {
             //free(self);
         }
         else {
-            //change self by l_node
+            ////change self in node_before by l_node
         }
+    }
+}
+
+struct Node* tree_search_parent(Tree* tree, struct Node* self) {
+    struct Node* parent = NULL;
+
+    if(tree->root == self) {
+        parent = self;
+        return parent;
+    }
+    else if(tree->root->l_node && tree->root->l_node == self) {
+        parent = tree->root;
+        return parent;
+    }
+    else if(tree->root->r_node && tree->root->r_node == self) {
+        parent = tree->root;
+        return parent;
+    }
+    else {
+        if(tree->root->l_node) {
+            Tree left_tree = tree_create();
+            left_tree.root = tree->root->l_node;
+            parent = tree_search_parent(&left_tree, self);
+
+            if((parent) && parent->l_node == self) {
+                return parent;
+            }
+        }
+
+        if(tree->root->r_node) {
+            Tree right_tree = tree_create();
+            right_tree.root = tree->root->r_node;
+            parent = tree_search_parent(&right_tree, self);
+
+            if((parent) && parent->r_node == self) {
+                return parent;
+            }
+        }
+
+        return parent;
     }
 }
 
@@ -291,6 +336,11 @@ int main() {
     struct Node* node_3 = tree_dfs_search(tree.root, 3);
     tree_insert_left(node_3, 6);
     tree_insert_right(node_3, 7);
+
+    //n_parent_2 = node_9
+    struct Node* n_parent_2 = tree_search_parent(&tree, node_2);
+    //n_parent_3 = node_0
+    struct Node* n_parent_3 = tree_search_parent(&tree, node_3);
 
     // root -> 1 -> 2(l) -> 4(l), 5(r)
     //           -> 0(r) -> 6(l), 7(r)
