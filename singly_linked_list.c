@@ -9,7 +9,6 @@ void list_splice_after(List* self, struct Node* after, List* other) {
             list_push_back(other, p_node->data);
         }
 
-        after->next = NULL;
         list_merge_to_back(self, other);
     }
     else {
