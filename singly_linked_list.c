@@ -19,7 +19,7 @@ void list_push_front(List* self, int value);
 int list_pop_front(List* self);
 struct Node* list_find(List* self, int value); // NULL if not found
 void list_erase_after(List* self, struct Node* node);
-void list_append(List* self, int value);
+void list_push_back(List* self, int value);
 void list_merge_to_back(List* self, List* other);
 void list_merge_to_front(List* self, List* other);
 void list_splice_after(List* self, struct Node* after, List* other);
@@ -35,7 +35,7 @@ void list_splice_after(List* self, struct Node* after, List* other) {
         struct Node *p_node = after;
 
         while((p_node = p_node->next) != NULL) {
-            list_append(other, p_node->data);
+            list_push_back(other, p_node->data);
         }
 
         after->next = NULL;
@@ -62,7 +62,7 @@ void list_merge_to_front(List* self, List* other) {
 
 }
 
-void list_append(List* self, int value) {
+void list_push_back(List* self, int value) {
     struct Node *p_new_node = (struct Node *) malloc(sizeof(struct Node));
 
     if (p_new_node == NULL) {
@@ -90,7 +90,7 @@ void list_merge_to_back(List* self, List* other) {
     int value;
     while(other->head != NULL) {
         value = list_pop_front(other);
-        list_append(self, value);
+        list_push_back(self, value);
     }
 }
 
@@ -182,7 +182,7 @@ List list_create(void) {
 int main() {
     /*
     List list = list_create();
-    list_append(&list, 1);
+    list_push_back(&list, 1);
     list_free(&list);
     assert(list.head == NULL);
     */
