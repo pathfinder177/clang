@@ -171,6 +171,23 @@ void list_push_front(List* self, int value) {
     self->head = p_new_node;
 }
 
+void list_print(List *self) {
+    struct Node* node;
+
+    if (self->head == NULL) {
+        printf("Warning: can not PRINT: list is empty\n");
+    }
+    else {
+        node = self->head;
+        while(node) {
+            printf("%d->", node->data);
+            node = node->next;
+        }
+        printf("\n");
+    }
+
+}
+
 //Return structure created on the stack
 List list_create(void) {
     List list;
@@ -193,20 +210,26 @@ int main() {
     list_push_front(&list, 3);
     list_push_front(&list, 2);
     list_push_front(&list, 1);
+    list_print(&list);
 
     list_push_front(&other_list, 6);
     list_push_front(&other_list, 5);
     list_push_front(&other_list, 4);
+    list_print(&other_list);
 
     struct Node* p_found_node_value = list_find(&list, 1);
 
     list_splice_after(&list, p_found_node_value, &other_list);
+    list_print(&list);
 
     list_merge_to_back(&list, &other_list);
-    list_merge_to_front(&list, &other_list);
+    list_print(&list);
 
+    list_merge_to_front(&list, &other_list);
+    list_print(&list);
 
     list_erase_after(&list, p_found_node_value);
+    list_print(&list);
 
     int i_val_1 = list_pop_front(&list);
     int i_val_2 = list_pop_front(&list);
