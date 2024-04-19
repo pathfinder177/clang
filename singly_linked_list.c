@@ -23,13 +23,7 @@ void list_splice_after(List* self, struct Node* after, List* other) {
 
 }
 
-
 void list_merge_to_front(List* self, List* other) {
-    if (self->head == NULL && other->head == NULL) {
-        fputs("Can not MERGE_TO_FRONT: both lists are empty\n", stderr);
-        exit(EXIT_FAILURE);
-    }
-
     int value;
     while(other->head != NULL) {
         value = list_pop_front(other);
@@ -58,11 +52,6 @@ void list_push_back(List* self, int value) {
 }
 
 void list_merge_to_back(List* self, List* other) {
-    if (self->head == NULL && other->head == NULL) {
-        fputs("Can not MERGE_TO_BACK: both lists are empty\n", stderr);
-        exit(EXIT_FAILURE);
-    }
-
     int value;
     while(other->head != NULL) {
         value = list_pop_front(other);
