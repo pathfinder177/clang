@@ -2,11 +2,6 @@
 
 
 void list_splice_after(List* self, struct Node* after, List* other) {
-    if (self->head == NULL && other->head == NULL) {
-        fputs("Can not SPLICE_AFTER: both lists are empty\n", stderr);
-        exit(EXIT_FAILURE);
-    }
-
     if(after->next) {
         struct Node *p_node = after;
 
@@ -20,7 +15,6 @@ void list_splice_after(List* self, struct Node* after, List* other) {
     else {
         list_merge_to_back(self, other);
     }
-
 }
 
 void list_merge_to_front(List* self, List* other) {
