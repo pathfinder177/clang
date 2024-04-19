@@ -88,11 +88,6 @@ void list_erase_after(List* self, struct Node* node) {
 }
 
 struct Node* list_find(List* self, int value) {
-    if (self->head == NULL) {
-        fputs("Can not FIND: list is empty\n", stderr);
-        exit(EXIT_FAILURE);
-    }
-
     struct Node *p_node = self->head;
 
     while (p_node) {
