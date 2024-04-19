@@ -107,7 +107,7 @@ void list_erase_after(List* self, struct Node* node) {
     struct Node *p_node_to_erase = node->next;
     node->next = p_node_to_erase->next;
 
-    free((void *) p_node_to_erase);
+    free(p_node_to_erase);
 
 }
 
@@ -138,7 +138,7 @@ int list_pop_front(List* self) {
     int head_data = self->head->data;
     struct Node *p_node_after_head = self->head->next;
 
-    free((void *) self->head);
+    free(self->head);
     self->head = p_node_after_head;
 
     return head_data;
@@ -152,7 +152,7 @@ void list_free(List* self) {
 
     while (p_node) {
         p_node_next = p_node->next;
-        free((void *) p_node);
+        free(p_node);
         p_node = p_node_next;
     }
 }
