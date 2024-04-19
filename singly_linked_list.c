@@ -26,19 +26,19 @@ void list_splice_after(List* self, struct Node* after, List* other);
 
 
 void list_splice_after(List* self, struct Node* after, List* other) {
-    if (self -> head == NULL && other -> head == NULL) {
+    if (self->head == NULL && other->head == NULL) {
         fputs("Can not SPLICE_AFTER: both lists are empty\n", stderr);
         exit(EXIT_FAILURE);
     }
 
-    if(after -> next) {
+    if(after->next) {
         struct Node *p_node = after;
 
-        while((p_node = p_node -> next) != NULL) {
-            list_append(other, p_node -> data);
+        while((p_node = p_node->next) != NULL) {
+            list_append(other, p_node->data);
         }
 
-        after -> next = NULL;
+        after->next = NULL;
         list_merge_to_back(self, other);
     }
     else {
@@ -49,13 +49,13 @@ void list_splice_after(List* self, struct Node* after, List* other) {
 
 
 void list_merge_to_front(List* self, List* other) {
-    if (self -> head == NULL && other -> head == NULL) {
+    if (self->head == NULL && other->head == NULL) {
         fputs("Can not MERGE_TO_FRONT: both lists are empty\n", stderr);
         exit(EXIT_FAILURE);
     }
 
     int value;
-    while(other -> head != NULL) {
+    while(other->head != NULL) {
         value = list_pop_front(other);
         list_push_front(self, value);
     }
@@ -70,76 +70,76 @@ void list_append(List* self, int value) {
         exit(EXIT_FAILURE);
     }
 
-    p_new_node -> data = value;
+    p_new_node->data = value;
 
-    struct Node *p_node_before = self -> head;
-    while(p_node_before -> next) {
-        p_node_before = p_node_before -> next;
+    struct Node *p_node_before = self->head;
+    while(p_node_before->next) {
+        p_node_before = p_node_before->next;
     }
 
-    p_node_before -> next = p_new_node;
+    p_node_before->next = p_new_node;
 
 }
 
 void list_merge_to_back(List* self, List* other) {
-    if (self -> head == NULL && other -> head == NULL) {
+    if (self->head == NULL && other->head == NULL) {
         fputs("Can not MERGE_TO_BACK: both lists are empty\n", stderr);
         exit(EXIT_FAILURE);
     }
 
     int value;
-    while(other -> head != NULL) {
+    while(other->head != NULL) {
         value = list_pop_front(other);
         list_append(self, value);
     }
 }
 
 void list_erase_after(List* self, struct Node* node) {
-    if (self -> head == NULL) {
+    if (self->head == NULL) {
         fputs("Can not ERASE_AFTER: list is empty\n", stderr);
         exit(EXIT_FAILURE);
     }
-    else if(node -> next == NULL) {
+    else if(node->next == NULL) {
         fputs("Can not ERASE_AFTER: your node is the last in list\n", stderr);
         exit(EXIT_FAILURE);
     }
 
-    struct Node *p_node_to_erase = node -> next;
-    node -> next = p_node_to_erase -> next;
+    struct Node *p_node_to_erase = node->next;
+    node->next = p_node_to_erase->next;
 
     free((void *) p_node_to_erase);
 
 }
 
 struct Node* list_find(List* self, int value) {
-    if (self -> head == NULL) {
+    if (self->head == NULL) {
         fputs("Can not FIND: list is empty\n", stderr);
         exit(EXIT_FAILURE);
     }
 
-    struct Node *p_node = self -> head;
+    struct Node *p_node = self->head;
 
     while (p_node) {
-        if (p_node -> data == value) {
+        if (p_node->data == value) {
             return p_node;
         }
-        p_node = p_node -> next;
+        p_node = p_node->next;
     }
 
     return NULL;
 }
 
 int list_pop_front(List* self) {
-    if (self -> head == NULL) {
+    if (self->head == NULL) {
         fputs("Can not POP: list is empty\n", stderr);
         exit(EXIT_FAILURE);
     }
 
-    int head_data = self -> head -> data;
-    struct Node *p_node_after_head = self -> head -> next;
+    int head_data = self->head->data;
+    struct Node *p_node_after_head = self->head->next;
 
-    free((void *) self -> head);
-    self -> head = p_node_after_head;
+    free((void *) self->head);
+    self->head = p_node_after_head;
 
     return head_data;
 }
@@ -148,10 +148,10 @@ int list_pop_front(List* self) {
 //Delete only Node(s) from memory
 void list_free(List* self) {
     struct Node *p_node, *p_node_next;
-    p_node = p_node_next = self -> head;
+    p_node = p_node_next = self->head;
 
     while (p_node) {
-        p_node_next = p_node -> next;
+        p_node_next = p_node->next;
         free((void *) p_node);
         p_node = p_node_next;
     }
@@ -165,10 +165,10 @@ void list_push_front(List* self, int value) {
         exit(EXIT_FAILURE);
     }
 
-    p_new_node -> data = value;
-    p_new_node -> next = self -> head;
+    p_new_node->data = value;
+    p_new_node->next = self->head;
 
-    self -> head = p_new_node;
+    self->head = p_new_node;
 }
 
 //Return structure created on the stack
