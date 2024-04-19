@@ -2,6 +2,7 @@
 
 
 void list_splice_after(List* self, struct Node* after, List* other) {
+    //FIXME https://github.com/pathfinder177/clang/pull/1#discussion_r1554849119
     if(after->next) {
         struct Node *p_node = after;
 
