@@ -112,25 +112,9 @@ int list_pop_front(List* self) {
     }
 
     int head_data = self->head->data;
-    struct Node *p_node_after_head = self->head->next;
-
-    free(self->head);
-    self->head = p_node_after_head;
+    self->head = self->head->next;
 
     return head_data;
-}
-
-
-//Delete only Node(s) from memory
-void list_free(List* self) {
-    struct Node *p_node, *p_node_next;
-    p_node = p_node_next = self->head;
-
-    while (p_node) {
-        p_node_next = p_node->next;
-        free(p_node);
-        p_node = p_node_next;
-    }
 }
 
 void list_push_front(List* self, int value) {
@@ -145,6 +129,18 @@ void list_push_front(List* self, int value) {
     p_new_node->next = self->head;
 
     self->head = p_new_node;
+}
+
+//Delete only Node(s) from memory
+void list_free(List* self) {
+    struct Node *p_node, *p_node_next;
+    p_node = p_node_next = self->head;
+
+    while (p_node) {
+        p_node_next = p_node->next;
+        free(p_node);
+        p_node = p_node_next;
+    }
 }
 
 void list_print(List *self) {
