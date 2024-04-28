@@ -13,10 +13,8 @@ void tree_free(struct Node*); // deallocates tree
 void tree_print(struct Node*);
 
 struct Node* tree_create_node(int);
-void tree_delete_node(Tree*, struct Node*);
-
-int tree_get_node_val(struct Node*);
 void tree_set_node_val(struct Node*, int);
+void tree_delete_node(Tree*, struct Node*);
 
 struct Node* tree_get_left_child(struct Node*);
 struct Node* tree_get_right_child(struct Node*);
@@ -29,16 +27,6 @@ static struct Node* tree_search_last_right_vertice(struct Node*);
 
 void tree_dfs_traverse(struct Node*);
 void tree_bfs_traverse(struct Node*);
-
-int tree_get_node_val(struct Node* self) {
-    if (self->data) {
-        return self->data;
-    }
-    else {
-        printf("Node has no data.\n");
-        exit(EXIT_FAILURE);
-    }
-}
 
 void tree_set_node_val(struct Node* self, int value) {
     if (self) {
@@ -275,15 +263,12 @@ int main() {
     // Unordered Binary Tree
     Tree tree = tree_create();
 
-    //Have doubts where is the best place to create root node
-    tree.root = tree_create_node(9);
-
     //node_val = 9
-    int node_val = tree_get_node_val(tree.root);
+    tree.root = tree_create_node(9);
 
     tree_set_node_val(tree.root, 1);
     //node_val = 1
-    int node_val_after_set = tree_get_node_val(tree.root);
+    int node_val_after_set = tree.root->data;
 
     // root -> 1 -> 9
     tree_insert_left(tree.root, 9);
