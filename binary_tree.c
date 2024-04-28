@@ -9,7 +9,8 @@ typedef struct {
 
 
 Tree tree_create(); // returns empty binary tree
-// void tree_free(Tree* self); // deallocates tree
+void tree_free(struct Node*); // deallocates tree
+void tree_print(struct Node*);
 
 struct Node* tree_create_node(int);
 void tree_delete_node(Tree*, struct Node*);
@@ -23,15 +24,11 @@ struct Node* tree_get_right_child(struct Node*);
 void tree_insert_left(struct Node*, int);
 void tree_insert_right(struct Node*, int);
 
-//actually not the part of the interface, part of learning
-void tree_inorder_traverse(struct Node*);
-void tree_preorder_traverse(struct Node*);
-void tree_postorder_traverse(struct Node*);
+static struct Node* tree_search_parent(Tree*, struct Node*);
+static struct Node* tree_search_last_right_vertice(struct Node*);
 
-struct Node* tree_search_parent(Tree*, struct Node*);
-struct Node* tree_search_last_right_vertice(struct Node*);
-struct Node* tree_dfs_search(struct Node*, int); //inorder traversal
-struct Node* tree_bfs_search(struct Node*, int);
+void tree_dfs_traverse(struct Node*);
+void tree_bfs_traverse(struct Node*);
 
 int tree_get_node_val(struct Node* self) {
     if (self->data) {
@@ -90,120 +87,41 @@ void tree_insert_right(struct Node* self, int value) {
     self->r_node=new_node;
 }
 
-struct Node* tree_bfs_search(struct Node* self, int value) {
-    struct Node *n = NULL;
+void tree_bfs_traverse(struct Node* self) {
     enQueue(self);
 
-    while((n = deQueue()) != NULL) {
+    while((self = deQueue()) != NULL) {
 
-        if(n->data==value) {
-            return n;
+        if(self->data) {
+            printf("Node data: %d\n", self->data);
         }
-        if(n->l_node) {
-            enQueue(n->l_node);
+        if(self->l_node) {
+            enQueue(self->l_node);
+            printf("Left node in queue:\n");
         }
-        if(n->r_node) {
-            enQueue(n->r_node);
+        if(self->r_node) {
+            printf("Right node in queue:\n");
+            enQueue(self->r_node);
         }
     }
-    return n;
 }
 
-struct Node* tree_dfs_search(struct Node* self, int value) {
-    /*
-    base case: value is found OR not
-    rec. step:
-        1. explore current node
-            if found: return value
-        2. if value is not in current node
-            a. recursive exploration of left subtree
-                if found: return value
-        3. if value is not in left subtree
-            a. recursive exploration of right subtree
-                if found: return value
-
-        if not found: return NULL
-    final state:
-        1. value is returned. algorithm is stopped.
-        2. NULL is returned. all nodes are visited
-    */
-
-   struct Node* n = NULL;
-
-    if(self->data == value) {
-        n = self;
-        return n;
-    }
-    if(self->l_node) {
-        n = tree_dfs_search(self->l_node, value);
-        if((n) && n->data == value) {
-            return n;
-        }
-    }
-    if(self->r_node) {
-        n = tree_dfs_search(self->r_node, value);
-        if((n) && n->data == value) {
-            return n;
-        }
-    }
-
-    return NULL;
-}
-
-void tree_postorder_traverse(struct Node* self) {
+void tree_dfs_traverse(struct Node* self) {
     if (self->l_node) {
-        tree_postorder_traverse(self->l_node);
+        printf("Left node:\n");
+        tree_dfs_traverse(self->l_node);
+    }
+    if (self->data) {
+        printf("Node data: %d\n", self->data);
     }
     if (self->r_node) {
-        tree_postorder_traverse(self->r_node);
-    }
-
-    printf("%d\n", self->data);
-}
-
-void tree_preorder_traverse(struct Node* self) {
-    printf("%d\n", self->data);
-
-    if (self->l_node) {
-        tree_preorder_traverse(self->l_node);
-    }
-
-    if (self->r_node) {
-        tree_preorder_traverse(self->r_node);
+        printf("Right node:\n");
+        tree_dfs_traverse(self->r_node);
     }
 }
 
-void tree_inorder_traverse(struct Node* self) {
-    /*
-    base case:
-        all nodes in subtree are visited
-    rec. step:
-        if l_node
-            rec(l_node)
-        else
-            print data
-        print data
-        if r_node
-            rec(r_node)
-        else
-            print data
-    final state:
-        all nodes are visited
-    */
-
-    if (self->l_node) {
-        tree_inorder_traverse(self->l_node);
-    }
-
-    printf("%d\n", self->data);
-
-    if (self->r_node) {
-        tree_inorder_traverse(self->r_node);
-    }
-}
 
 void tree_delete_node(Tree* tree, struct Node* self) {
-    //if duplicate is encountered: delete first found node
     struct Node* parent = tree_search_parent(tree, self);
 
     if(self->l_node == NULL && self->r_node == NULL) {
@@ -313,6 +231,13 @@ struct Node* tree_search_last_right_vertice(struct Node* left_child) {
     return l_r_v;
 }
 
+//print tree using preorder way
+void tree_print(struct Node* self) {
+    if (self) {
+        tree_dfs_traverse(self);
+    }
+}
+
 struct Node* tree_create_node(int value) {
     struct Node* new_node;
 
@@ -328,6 +253,16 @@ struct Node* tree_create_node(int value) {
     return new_node;
 }
 
+void tree_free(struct Node* self) {
+    if(self->l_node) {
+        tree_free(self->l_node);
+    }
+    if(self->r_node) {
+        tree_free(self->r_node);
+    }
+
+    free(self);
+}
 
 Tree tree_create() {
     Tree tree;
@@ -350,7 +285,6 @@ int main() {
     //node_val = 1
     int node_val_after_set = tree_get_node_val(tree.root);
 
-
     // root -> 1 -> 9
     tree_insert_left(tree.root, 9);
 
@@ -369,42 +303,25 @@ int main() {
     // root -> 1 -> 9(l) -> 2(l) -> 4(l), 5(r) -> 8(l)
     //           -> 0(r) -> 3(l) -> 6(l), 7(r)
     //left subtree
-    struct Node* node_9 = tree_dfs_search(tree.root, 9);
-    tree_insert_left(node_9, 2);
-    struct Node* node_2 = tree_dfs_search(tree.root, 2);
-    tree_insert_left(node_2, 4);
-    tree_insert_right(node_2, 5);
-    struct Node* node_5 = tree_dfs_search(tree.root, 5);
-    tree_insert_left(node_5, 8);
-
+    tree_insert_left(l_node, 2);
+    tree_insert_left(l_node->l_node, 4);
+    tree_insert_right(l_node->l_node, 5);
+    tree_insert_left(l_node->l_node->r_node, 8);
 
     //right subtree
-    struct Node* node_0 = tree_dfs_search(tree.root, 0);
-    tree_insert_right(node_0, 3);
-    struct Node* node_3 = tree_dfs_search(tree.root, 3);
-    tree_insert_left(node_3, 6);
-    tree_insert_right(node_3, 7);
-
-    //n_parent_2 = node_9
-    struct Node* n_parent_2 = tree_search_parent(&tree, node_2);
-    //n_parent_3 = node_0
-    struct Node* n_parent_3 = tree_search_parent(&tree, node_3);
+    tree_insert_left(r_node, 3);
+    tree_insert_left(r_node->l_node, 6);
+    tree_insert_right(r_node->l_node, 7);
 
     // root -> 5 -> 2(l) -> 4(l), 8(r)
     //           -> 0(r) -> 3(r) -> 6(l), 7(r)
-    tree_delete_node(&tree, node_9);
+    tree_delete_node(&tree, l_node);
 
-    //
-    // tree_inorder_traverse(tree.root);
+    tree_print(tree.root);
 
-    //
-    // tree_preorder_traverse(tree.root);
+    // tree_bfs_traverse(tree.root);
 
-    //
-    // tree_postorder_traverse(tree.root);
-
-    // struct Node* n = tree_bfs_search(tree.root, 7);
-
+    tree_free(tree.root);
 
     return 0;
 }
