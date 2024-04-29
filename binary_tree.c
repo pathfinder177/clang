@@ -22,6 +22,8 @@ struct Node* tree_get_right_child(struct Node*);
 void tree_insert_left(struct Node*, int);
 void tree_insert_right(struct Node*, int);
 
+static void tree_rotate_left(Tree*, int);
+
 static struct Node* tree_search_parent(Tree*, struct Node*);
 static struct Node* tree_search_last_right_vertice(struct Node*);
 
@@ -73,6 +75,57 @@ void tree_insert_right(struct Node* self, int value) {
     }
 
     self->r_node=new_node;
+}
+
+static void tree_rotate_left(Tree* self, int value) {
+    if(self->root->data == value && self->root->r_node) {
+        struct Node* new_subtree_root = self->root->r_node;
+
+        self->root->r_node = new_subtree_root->l_node;
+        new_subtree_root->l_node = self->root;
+        self->root = new_subtree_root;
+    }
+    else {
+        struct Node* parent = self->root;
+        struct Node* ex_subtree_root = NULL;
+        struct Node* new_subtree_root = NULL;
+
+        while(parent) {
+            if (parent->l_node && parent->l_node->data == value) {
+                ex_subtree_root = parent->l_node;
+
+                if(ex_subtree_root->r_node) {
+                    new_subtree_root = ex_subtree_root->r_node;
+
+                    parent->l_node = new_subtree_root;
+                    ex_subtree_root->r_node = new_subtree_root->l_node;
+                    new_subtree_root->l_node = ex_subtree_root;
+                }
+
+                break;
+            }
+            if (parent->r_node && parent->r_node->data == value) {
+                ex_subtree_root = parent->r_node;
+
+                if(ex_subtree_root->r_node) {
+                    new_subtree_root = ex_subtree_root->r_node;
+
+                    parent->r_node = new_subtree_root;
+                    ex_subtree_root->r_node = new_subtree_root->l_node;
+                    new_subtree_root->l_node = ex_subtree_root;
+                }
+
+                break;
+            }
+
+            if(parent->data < value) {
+                parent = parent->l_node;
+            }
+            else {
+                parent = parent->r_node;
+            }
+        }
+    }
 }
 
 void tree_bfs_traverse(struct Node* self) {
@@ -302,11 +355,25 @@ int main() {
     //           -> 0(r) -> 3(r) -> 6(l), 7(r)
     tree_delete_node(&tree, l_node);
 
-    tree_print(tree.root);
+    // tree_print(tree.root);
 
     // tree_bfs_traverse(tree.root);
 
+    Tree rotated_left_tree = tree_create();
+    rotated_left_tree.root = tree_create_node(5);
+
+    tree_insert_left(rotated_left_tree.root, 3);
+    tree_insert_left(rotated_left_tree.root->l_node, 1);
+    tree_insert_right(rotated_left_tree.root->l_node, 2);
+
+    tree_insert_right(rotated_left_tree.root, 8);
+    tree_insert_left(rotated_left_tree.root->r_node, 7);
+    tree_insert_right(rotated_left_tree.root->r_node, 10);
+
+    tree_rotate_left(&rotated_left_tree, 5);
+
     tree_free(tree.root);
+    tree_free(rotated_left_tree.root);
 
     return 0;
 }
