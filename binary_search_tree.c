@@ -10,74 +10,24 @@ typedef struct {
 
 Tree tree_create(); // returns empty binary tree
 void tree_free(struct Node*); // deallocates tree
-void tree_print(struct Node*);
 
-struct Node* tree_create_node(int);
-void tree_set_node_val(struct Node*, int);
+void tree_insert_node(struct Node**, int);
+static struct Node* tree_create_node(int);
+
+struct Node* tree_find(struct Node*, int);
+static struct Node* tree_find_parent(struct Node*, int);
+
 void tree_delete_node(Tree*, struct Node*);
-
-struct Node* tree_get_left_child(struct Node*);
-struct Node* tree_get_right_child(struct Node*);
-
-void tree_insert_left(struct Node*, int);
-void tree_insert_right(struct Node*, int);
 
 static void tree_rotate_left(Tree*, int);
 static void tree_rotate_right(Tree*, int);
-
 
 static struct Node* tree_search_parent(Tree*, struct Node*);
 static struct Node* tree_search_last_right_vertice(struct Node*);
 
 void tree_dfs_traverse(struct Node*);
 void tree_bfs_traverse(struct Node*);
-
-void tree_set_node_val(struct Node* self, int value) {
-    if (self) {
-        self->data = value;
-    }
-    else {
-        printf("Node pointer is NULL\n");
-        exit(EXIT_FAILURE);
-    }
-}
-
-struct Node* tree_get_left_child(struct Node* self) {
-    if (self->l_node) {
-        return self->l_node;
-    }
-    else {
-        return NULL;
-    }
-}
-
-struct Node* tree_get_right_child(struct Node* self) {
-    if (self->r_node) {
-        return self->r_node;
-    }
-    else {
-        return NULL;
-    }
-}
-
-void tree_insert_left(struct Node* self, int value) {
-    struct Node* new_node = tree_create_node(value);
-
-    if(self->l_node) {
-        new_node->l_node=self->l_node;
-    }
-    self->l_node=new_node;
-}
-
-void tree_insert_right(struct Node* self, int value) {
-    struct Node* new_node = tree_create_node(value);
-
-    if(self->r_node) {
-        new_node->r_node=self->r_node;
-    }
-
-    self->r_node=new_node;
-}
+void tree_print(struct Node*);
 
 static void tree_rotate_left(Tree* self, int value) {
     if(self->root->data == value && self->root->r_node) {
@@ -335,7 +285,53 @@ void tree_print(struct Node* self) {
     }
 }
 
-struct Node* tree_create_node(int value) {
+static struct Node* tree_find_parent(struct Node* self, int value) {
+    if ((self) && value < self->data && self->l_node) {
+        if(self->l_node->data == value) {
+            return self;
+        }
+        return tree_find_parent(self->l_node, value);
+    }
+    if ((self) && value > self->data && self->r_node) {
+        if(self->r_node->data == value) {
+            return self;
+        }
+        return tree_find_parent(self->r_node, value);
+    }
+
+    return NULL;
+}
+
+struct Node* tree_find(struct Node* self, int value) {
+    if (self) {
+        if(self->data == value) {
+            return self;
+        }
+        if(value < self->data) {
+            return tree_find(self->l_node, value);
+        }
+        else if(value > self->data) {
+            return tree_find(self->r_node, value);
+        }
+    }
+
+    return NULL;
+}
+
+void tree_insert_node(struct Node** self, int value) {
+    if(*self == NULL) {
+       *self = tree_create_node(value);
+    }
+
+    if(value < (*self)->data) {
+        tree_insert_node(&((*self)->l_node), value);
+    }
+    else if(value > (*self)->data) {
+        tree_insert_node(&((*self)->r_node), value);
+    }
+}
+
+static struct Node* tree_create_node(int value) {
     struct Node* new_node;
 
     if ((new_node = (struct Node*)malloc(sizeof(struct Node))) == NULL) {
@@ -351,14 +347,15 @@ struct Node* tree_create_node(int value) {
 }
 
 void tree_free(struct Node* self) {
-    if(self->l_node) {
-        tree_free(self->l_node);
+    if(self) {
+        if(self->l_node) {
+            tree_free(self->l_node);
+        }
+        if(self->r_node) {
+            tree_free(self->r_node);
+        }
+        free(self);
     }
-    if(self->r_node) {
-        tree_free(self->r_node);
-    }
-
-    free(self);
 }
 
 Tree tree_create() {
@@ -369,68 +366,30 @@ Tree tree_create() {
 }
 
 int main() {
-    // Unordered Binary Tree
+    //    10
+    //   /  \
+    //  5    15
+    // / \  / \
+//    3   7 12 18
+//   / \
+//  1   4
+    int tree_values[] = {10,5,3,7,1,4,15,12,18};
     Tree tree = tree_create();
 
-    //node_val = 9
-    tree.root = tree_create_node(9);
+    //FIXME make as test function to provide filled tree
+    for (int i = 0; i<(sizeof(tree_values)/sizeof(int)); i++) {
+        tree_insert_node(&tree.root, tree_values[i]);
+    }
 
-    tree_set_node_val(tree.root, 1);
-    //node_val = 1
-    int node_val_after_set = tree.root->data;
+    struct Node* found_node = tree_find(tree.root, 3);
+    struct Node* parent_found_node = tree_find_parent(tree.root, 4);
 
-    // root -> 1 -> 9
-    tree_insert_left(tree.root, 9);
-
-    // root -> 1 -> 9
-    //           -> 0
-    tree_insert_right(tree.root, 0);
-
-    //l_node = node_9
-    struct Node* l_node = tree_get_left_child(tree.root);
-    //r_node = node_0
-    struct Node* r_node = tree_get_right_child(tree.root);
-
-    // root -> 9 -> 0(r)
-    tree_delete_node(&tree, tree.root);
-
-    // root -> 1 -> 9(l) -> 2(l) -> 4(l), 5(r) -> 8(l)
-    //           -> 0(r) -> 3(l) -> 6(l), 7(r)
-    //left subtree
-    tree_insert_left(l_node, 2);
-    tree_insert_left(l_node->l_node, 4);
-    tree_insert_right(l_node->l_node, 5);
-    tree_insert_left(l_node->l_node->r_node, 8);
-
-    //right subtree
-    tree_insert_left(r_node, 3);
-    tree_insert_left(r_node->l_node, 6);
-    tree_insert_right(r_node->l_node, 7);
-
-    // root -> 5 -> 2(l) -> 4(l), 8(r)
-    //           -> 0(r) -> 3(r) -> 6(l), 7(r)
-    tree_delete_node(&tree, l_node);
 
     // tree_print(tree.root);
-
+    // tree_dfs_traverse(tree.root);
     // tree_bfs_traverse(tree.root);
 
-    Tree rotated_tree = tree_create();
-    rotated_tree.root = tree_create_node(5);
-
-    tree_insert_left(rotated_tree.root, 3);
-    tree_insert_left(rotated_tree.root->l_node, 1);
-    tree_insert_right(rotated_tree.root->l_node, 2);
-
-    tree_insert_right(rotated_tree.root, 8);
-    tree_insert_left(rotated_tree.root->r_node, 7);
-    tree_insert_right(rotated_tree.root->r_node, 10);
-
-    tree_rotate_left(&rotated_tree, 5);
-    tree_rotate_right(&rotated_tree, 8);
-
     tree_free(tree.root);
-    tree_free(rotated_tree.root);
 
     return 0;
 }
