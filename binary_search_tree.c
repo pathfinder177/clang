@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include "node.h"
 #include "bfs_queue.h"
 
@@ -17,6 +18,7 @@ static struct Node* tree_create_node(int);
 struct Node* tree_find(struct Node*, int);
 static struct Node* tree_find_parent(struct Node*, int);
 
+bool tree_erase_node(Tree*, int);
 void tree_delete_node(Tree*, struct Node*);
 
 static void tree_rotate_left(Tree*, int);
@@ -228,6 +230,72 @@ void tree_delete_node(Tree* tree, struct Node* self) {
     free((void*) self);
 }
 
+bool tree_erase_node(Tree* self, int value) {
+    /*
+        node has at least 1 child:
+            has value:
+                has left or right: replaces with the child, true
+                has left and right:
+                    left has no right child: replace with left, true
+                    left has right child:
+                        find last_right_vertice:
+                            l_r_v has no left child:
+                                replace with l_r_v
+                            l_r_v has left child:
+                                replaces l_r_v with left child
+                                replaces node with l_r_v
+
+    */
+
+   struct Node* root = self->root;
+
+   //check if leaf
+    if ((root) && root->l_node == NULL && root->r_node == NULL) {
+        if (root->data == value) {
+            free(root);
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+    if((root) && (root->l_node || root->r_node)) {
+        if(root->data == value) {
+            if(root->l_node) {
+                self->root = root->l_node;
+            }
+            if(root->r_node) {
+                self->root = root->r_node;
+            }
+
+            free(root);
+            return true;
+        }
+        else {
+            Tree subtree = tree_create();
+
+            if(root->data > value && root->l_node) {
+                subtree.root = root->l_node;
+                tree_erase_node(&subtree, value);
+            }
+
+            if(root->data < value && root->l_node) {
+                subtree.root = root->l_node;
+                tree_erase_node(&subtree, value);
+            }
+        }
+    }
+
+
+    // if((root) && root->l_node && root->r_node) {
+    // }
+
+    return false;
+
+
+}
+
 struct Node* tree_search_parent(Tree* tree, struct Node* self) {
     struct Node* parent = NULL;
 
@@ -384,6 +452,7 @@ int main() {
     struct Node* found_node = tree_find(tree.root, 3);
     struct Node* parent_found_node = tree_find_parent(tree.root, 4);
 
+    tree_erase_node(&tree, 5);
 
     // tree_print(tree.root);
     // tree_dfs_traverse(tree.root);
