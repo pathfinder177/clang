@@ -24,7 +24,7 @@ static void tree_rotate_left(Tree*, int);
 static void tree_rotate_right(Tree*, int);
 
 static struct Node* tree_search_parent(Tree*, struct Node*);
-static struct Node* tree_search_last_right_vertice(struct Node*);
+static struct Node* tree_find_last_right_vertice(struct Node*);
 
 void tree_dfs_traverse(struct Node*);
 void tree_bfs_traverse(struct Node*);
@@ -193,34 +193,6 @@ bool tree_erase_node(Tree* self, int value) {
             return true;
         }
     }
-
-    //if root has left and right
-    // if((root) && (root->l_node && root->r_node)) {
-    //     if(root->data == value) {
-    //         if(root->l_node->r_node) {
-    //             ;
-    //         }
-    //         else {
-    //             self->root = root->l_node;
-    //             free(root);
-
-    //             return true;
-    //         }
-    //     }
-    //     else {
-    //         Tree subtree = tree_create();
-
-    //         if(root->data > value) {
-    //             subtree.root = root->l_node;
-    //             return tree_erase_node(&subtree, value);
-    //         }
-    //         else if(root->data < value) {
-    //             subtree.root = root->l_node;
-    //             return tree_erase_node(&subtree, value);
-    //         }
-    //     }
-    // }
-
     //if root has only left
     else if((root) && (root->l_node && root->r_node == NULL)) {
         if(root->data == value) {
@@ -251,7 +223,6 @@ bool tree_erase_node(Tree* self, int value) {
             }
         }
     }
-
     //if root has only right
     else if((root) && (root->r_node && root->l_node == NULL)) {
         if(root->data == value) {
@@ -282,10 +253,60 @@ bool tree_erase_node(Tree* self, int value) {
             }
         }
     }
+    //if root has left and right
+    else if((root) && (root->l_node && root->r_node)) {
+        if(root->data == value) {
+            if(root->l_node->r_node) {
+                struct Node* last_right_vertice = tree_find_last_right_vertice(root->l_node);
 
-    // else if((root) && root->l_node && root->r_node) {
-    //     ;
-    // }
+                if(last_right_vertice->l_node) {
+                    struct Node* l_r_v_left_node = last_right_vertice->l_node;
+
+                    last_right_vertice->l_node = root->l_node;
+                    last_right_vertice->r_node = root->r_node;
+                    last_right_vertice->l_node->r_node = l_r_v_left_node;
+
+                    root->l_node->r_node = NULL;
+                    self->root=last_right_vertice;
+
+                    free(root);
+
+                    return true;
+                }
+                else {
+                    last_right_vertice->l_node = root->l_node;
+                    last_right_vertice->r_node = root->r_node;
+
+                    root->l_node->r_node = NULL;
+                    self->root=last_right_vertice;
+
+                    free(root);
+
+                    return true;
+                }
+            }
+            else {
+                root->l_node->r_node = root->r_node;
+                self->root = root->l_node;
+                free(root);
+
+                return true;
+            }
+        }
+        //recursion step
+        else {
+            Tree subtree = tree_create();
+
+            if(root->data > value) {
+                subtree.root = root->l_node;
+                return tree_erase_node(&subtree, value);
+            }
+            else if(root->data < value) {
+                subtree.root = root->r_node;
+                return tree_erase_node(&subtree, value);
+            }
+        }
+    }
 
     return false;
 }
@@ -330,8 +351,8 @@ struct Node* tree_search_parent(Tree* tree, struct Node* self) {
     }
 }
 
-struct Node* tree_search_last_right_vertice(struct Node* left_child) {
-    struct Node* l_r_v = left_child;
+struct Node* tree_find_last_right_vertice(struct Node* left_child) {
+    struct Node* l_r_v = left_child->r_node;
 
     while(l_r_v->r_node) {
         l_r_v = l_r_v->r_node;
@@ -436,9 +457,7 @@ int main() {
 //    3   7 12 18
 //   / \
 //  1   4
-    // int tree_values[] = {10,5,3,7,1,4,15,12,18}; //full
-    // int tree_values[] = {10,5,3,1,4}; //left
-    int tree_values[] = {10,15,12,18}; //right
+    int tree_values[] = {10,5,3,7,1,4,15,12,18};
     Tree tree = tree_create();
 
     //FIXME make as test function to provide filled tree
