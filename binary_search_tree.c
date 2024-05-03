@@ -168,176 +168,6 @@ void tree_dfs_traverse(struct Node* self) {
     }
 }
 
-// bool tree_erase_node(Tree* self, int value) {
-//     /*
-//     node has left and right:
-//         left has no right child: replace with left, true
-//         left has right child:
-//             find last_right_vertice:
-//                 l_r_v has no left child:
-//                     replace with l_r_v
-//                 l_r_v has left child:
-//                     replaces l_r_v with left child
-//                     replaces node with l_r_v
-
-//     */
-
-//    struct Node* root = self->root;
-
-//    //if root is leaf
-//     if ((root) && root->l_node == NULL && root->r_node == NULL) {
-//         if (root->data == value) {
-//             self->root = NULL;
-//             free(root);
-
-//             return true;
-//         }
-//     }
-//     //if root has only left
-//     else if((root) && root->r_node == NULL) {
-//         if(root->data == value) {
-//             self->root = root->l_node;
-//             free(root);
-
-//             return true;
-//         }
-
-//         else if(root->l_node->data == value) {
-//             if(root->l_node->r_node) {
-//                 struct Node* last_right_vertice = tree_find_last_right_vertice(root->l_node);
-
-//                 if(last_right_vertice->l_node) {
-//                     struct Node* l_r_v_left_node = last_right_vertice->l_node;
-
-//                     last_right_vertice->l_node = root->l_node;
-//                     last_right_vertice->r_node = root->r_node;
-//                     last_right_vertice->l_node->r_node = l_r_v_left_node;
-
-//                     root->l_node->r_node = NULL;
-//                     self->root=last_right_vertice;
-
-//                     free(root);
-
-//                     return true;
-//                 }
-//                 else {
-//                     last_right_vertice->l_node = root->l_node;
-//                     last_right_vertice->r_node = root->r_node;
-
-//                     root->l_node->r_node = NULL;
-//                     self->root=last_right_vertice;
-
-//                     free(root);
-//                     return true;
-//                 }
-//             }
-//             else {
-//                 root->l_node->r_node = root->r_node;
-//                 self->root = root->l_node;
-//                 free(root);
-
-//                 return true;
-//             }
-//         }
-
-//         else {
-//                 Tree subtree = tree_create();
-//                 subtree.root = root->l_node;
-
-//                 return tree_erase_node(&subtree, value);
-//         }
-//     }
-//     //if root has only right
-//     // else if((root) && root->l_node == NULL) {
-//     //     if(root->data == value) {
-//     //         self->root = root->r_node;
-//     //         free(root);
-
-//     //         return true;
-//     //     }
-//     //     else if(root->r_node->data == value) {
-//     //         struct Node* old_right = root->r_node;
-
-//     //         if(old_right->l_node) {
-//     //             root->l_node = old_right->l_node;
-//     //         }
-//     //         root->r_node = old_right->r_node;
-
-//     //         free(old_right);
-
-//     //         return true;
-//     //     }
-//     //     else {
-//     //             Tree subtree = tree_create();
-//     //             subtree.root = root->r_node;
-
-//     //             return tree_erase_node(&subtree, value);
-
-//     //     }
-//     // }
-//     //if root has left and right
-//     // else if((root) && (root->l_node && root->r_node)) {
-//     //     if(root->data == value) {
-//     //         if(root->l_node->r_node) {
-//     //             struct Node* last_right_vertice = tree_find_last_right_vertice(root->l_node);
-
-//     //             if(last_right_vertice->l_node) {
-//     //                 struct Node* l_r_v_left_node = last_right_vertice->l_node;
-
-//     //                 last_right_vertice->l_node = root->l_node;
-//     //                 last_right_vertice->r_node = root->r_node;
-//     //                 last_right_vertice->l_node->r_node = l_r_v_left_node;
-
-//     //                 root->l_node->r_node = NULL;
-//     //                 self->root=last_right_vertice;
-
-//     //                 free(root);
-
-//     //                 return true;
-//     //             }
-//     //             else {
-//     //                 last_right_vertice->l_node = root->l_node;
-//     //                 last_right_vertice->r_node = root->r_node;
-
-//     //                 root->l_node->r_node = NULL;
-//     //                 self->root=last_right_vertice;
-
-//     //                 free(root);
-
-//     //                 return true;
-//     //             }
-//     //         }
-//     //         else {
-//     //             root->l_node->r_node = root->r_node;
-//     //             self->root = root->l_node;
-//     //             free(root);
-
-//     //             return true;
-//     //         }
-//     //     }
-//     //     else if(root->l_node->data == value) {
-//     //         ;
-//     //     }
-//     //     else if(root->r_node->data == value) {
-//     //         ;
-//     //     }
-//     //     //recursion step
-//     //     else {
-//     //         Tree subtree = tree_create();
-
-//     //         if(root->data > value) {
-//     //             subtree.root = root->l_node;
-//     //             return tree_erase_node(&subtree, value);
-//     //         }
-//     //         else if(root->data < value) {
-//     //             subtree.root = root->r_node;
-//     //             return tree_erase_node(&subtree, value);
-//     //         }
-//     //     }
-//     // }
-
-//     return false;
-// }
 
 struct Node* tree_search_parent(Tree* tree, struct Node* self) {
     struct Node* parent = NULL;
@@ -508,7 +338,7 @@ node has left and right:
         }
 
         Tree subtree = tree_create();
-
+        //left
         if(root->l_node && root->data > value) {
             subtree.root = root->l_node;
             bool is_found = tree_erase_node(&subtree, value);
@@ -562,11 +392,57 @@ node has left and right:
             }
         }
 
-
+        //right
         if(root->r_node && root->data < value) {
             subtree.root = root->r_node;
+            bool is_found = tree_erase_node(&subtree, value);
 
-            return tree_erase_node(&subtree, value);
+            if(is_found && root->r_node->data == value) {
+
+                if(root->r_node->l_node->r_node) {
+                    struct Node* last_right_vertice = tree_find_last_right_vertice(root->r_node->l_node);
+
+                    if(last_right_vertice->l_node) {
+                        struct Node* old_right = root->r_node;
+                        struct Node* l_r_v_left_node = last_right_vertice->l_node;
+
+                        last_right_vertice->r_node = root->r_node->r_node;
+                        last_right_vertice->l_node = root->r_node->l_node;
+                        last_right_vertice->l_node->r_node = l_r_v_left_node;
+
+                        root->r_node = last_right_vertice;
+
+                        free(old_right);
+
+                        return true;
+                    }
+                    else {
+                        struct Node* old_right = root->r_node;
+                        last_right_vertice->r_node = old_right->r_node;
+                        last_right_vertice->l_node = old_right->l_node;
+
+                        root->r_node->l_node->r_node = NULL;
+                        root->r_node = last_right_vertice;
+
+                        free(old_right);
+
+                        return true;
+                    }
+                }
+                else {
+                    struct Node* old_right = root->r_node;
+
+                    root->r_node = old_right->l_node;
+                    root->r_node->r_node = old_right->r_node;
+                    free(old_right);
+
+                    return true;
+                }
+            }
+
+            else if(is_found) {
+                return true;
+            }
         }
     }
 
@@ -575,16 +451,16 @@ node has left and right:
 
 int main() {
     //    10
-    //   /  \
-    //  5    15
-    // / \  / \
-//    3   7 12 18
-//   / \
-//  1   4
+    //   /     \
+    //  5       15
+    // /  \     / \
+//    3    9   12 18
+//   /\   /     \
+//  1 4  7      14
+//       \      /
+//       8     13
 
-    // int tree_values[] = {10,5,3,7,1,4,15,12,18};
-    int tree_values[] = {10,8,3,5,4,9}; //left
-    // int tree_values[] = {10,15,18,21}; //right
+    int tree_values[] = {10,5,3,9,7,8,1,4,15,12,14,13,18};
     Tree tree = tree_create();
 
     //FIXME make as test function to provide filled tree
@@ -595,7 +471,9 @@ int main() {
     // struct Node* found_node = tree_find(tree.root, 3); FIXME
     // struct Node* parent_found_node = tree_find_parent(tree.root, 4);
 
+    bool is_erased = tree_erase_node(&tree, 10);
     bool is_erased = tree_erase_node(&tree, 5);
+    bool is_erased = tree_erase_node(&tree, 15);
 
     // tree_print(tree.root);
     // tree_dfs_traverse(tree.root);
