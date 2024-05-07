@@ -21,119 +21,46 @@ static struct Node* tree_find_parent(struct Node*, int);
 bool tree_erase_node(Tree*, int);
 static struct Node* tree_swap_nodes(Tree*);
 
-static void tree_rotate_left(Tree*, int);
-static void tree_rotate_right(Tree*, int);
+static void tree_rotate_left(Tree*, struct Node**);
+static void tree_rotate_right(Tree*, struct Node**);
 
-static struct Node* tree_search_parent(Tree*, struct Node*);
+// static struct Node* tree_search_parent(Tree*, struct Node*);
 static struct Node* tree_find_last_right_vertice(struct Node*);
 
 void tree_dfs_traverse(struct Node*);
 void tree_bfs_traverse(struct Node*);
 void tree_print(struct Node*);
 
-static void tree_rotate_left(Tree* self, int value) {
-    if(self->root->data == value && self->root->r_node) {
-        struct Node* new_subtree_root = self->root->r_node;
+static void tree_rotate_left(Tree* self, struct Node** old_left) {
+    if((*old_left)->r_node) {
+        struct Node* p_new_root = tree_create_node((*old_left)->r_node->data);
 
-        self->root->r_node = new_subtree_root->l_node;
-        new_subtree_root->l_node = self->root;
-        self->root = new_subtree_root;
+        p_new_root->r_node = (*old_left)->r_node->r_node;
+        (*old_left)->r_node = (*old_left)->r_node->l_node;
+        p_new_root->l_node = (*old_left);
+
+        (*old_left) = p_new_root;
     }
     else {
-        struct Node* parent = self->root;
-        struct Node* ex_subtree_root = NULL;
-        struct Node* new_subtree_root = NULL;
-
-        while(parent) {
-            if (parent->l_node && parent->l_node->data == value) {
-                ex_subtree_root = parent->l_node;
-
-                if(ex_subtree_root->r_node) {
-                    new_subtree_root = ex_subtree_root->r_node;
-
-                    parent->l_node = new_subtree_root;
-                    ex_subtree_root->r_node = new_subtree_root->l_node;
-                    new_subtree_root->l_node = ex_subtree_root;
-                }
-
-                break;
-            }
-            if (parent->r_node && parent->r_node->data == value) {
-                ex_subtree_root = parent->r_node;
-
-                if(ex_subtree_root->r_node) {
-                    new_subtree_root = ex_subtree_root->r_node;
-
-                    parent->r_node = new_subtree_root;
-                    ex_subtree_root->r_node = new_subtree_root->l_node;
-                    new_subtree_root->l_node = ex_subtree_root;
-                }
-
-                break;
-            }
-
-            if(parent->data < value) {
-                parent = parent->l_node;
-            }
-            else {
-                parent = parent->r_node;
-            }
-        }
+        printf("No right child: node can not be left rotated\n");
+        abort();
     }
 }
 
-static void tree_rotate_right(Tree* self, int value) {
+static void tree_rotate_right(Tree* self, struct Node** old_right) {
+    if((*old_right)->l_node) {
+        struct Node* p_new_root = tree_create_node((*old_right)->l_node->data); //5
 
-    if(self->root->data == value && self->root->l_node) {
-        struct Node* new_subtree_root = self->root->l_node;
+        p_new_root->l_node = (*old_right)->l_node->l_node;
+        (*old_right)->l_node = (*old_right)->l_node->r_node;
+        p_new_root->r_node = (*old_right); //5->10
 
-        self->root->l_node = new_subtree_root->r_node;
-        new_subtree_root->r_node = self->root;
-        self->root = new_subtree_root;
+        (*old_right) = p_new_root;
     }
-
     else {
-        struct Node* parent = self->root;
-        struct Node* ex_subtree_root = NULL;
-        struct Node* new_subtree_root = NULL;
-
-        while(parent) {
-            if (parent->l_node && parent->l_node->data == value) {
-                ex_subtree_root = parent->l_node;
-
-                if(ex_subtree_root->l_node) {
-                    new_subtree_root = ex_subtree_root->l_node;
-
-                    parent->l_node = new_subtree_root;
-                    ex_subtree_root->l_node = new_subtree_root->r_node;
-                    new_subtree_root->r_node = ex_subtree_root;
-                }
-
-                break;
-            }
-            if (parent->r_node && parent->r_node->data == value) {
-                ex_subtree_root = parent->r_node;
-
-                if(ex_subtree_root->l_node) {
-                    new_subtree_root = ex_subtree_root->l_node;
-
-                    parent->r_node = new_subtree_root; //5(r)->7
-                    ex_subtree_root->l_node = new_subtree_root->r_node; //8(l)->N
-                    new_subtree_root->r_node = ex_subtree_root; //7(r)->8
-                }
-
-                break;
-            }
-
-            if(parent->data < value) {
-                parent = parent->l_node;
-            }
-            else {
-                parent = parent->r_node;
-            }
-        }
+        printf("No left child: node can not be right rotated\n");
+        abort();
     }
-
 }
 
 void tree_bfs_traverse(struct Node* self) {
@@ -170,45 +97,45 @@ void tree_dfs_traverse(struct Node* self) {
 }
 
 
-struct Node* tree_search_parent(Tree* tree, struct Node* self) {
-    struct Node* parent = NULL;
+// struct Node* tree_search_parent(Tree* tree, struct Node* self) {
+//     struct Node* parent = NULL;
 
-    if(tree->root == self) {
-        parent = self;
-        return parent;
-    }
-    else if(tree->root->l_node && tree->root->l_node == self) {
-        parent = tree->root;
-        return parent;
-    }
-    else if(tree->root->r_node && tree->root->r_node == self) {
-        parent = tree->root;
-        return parent;
-    }
-    else {
-        if(tree->root->l_node) {
-            Tree left_tree = tree_create();
-            left_tree.root = tree->root->l_node;
-            parent = tree_search_parent(&left_tree, self);
+//     if(tree->root == self) {
+//         parent = self;
+//         return parent;
+//     }
+//     else if(tree->root->l_node && tree->root->l_node == self) {
+//         parent = tree->root;
+//         return parent;
+//     }
+//     else if(tree->root->r_node && tree->root->r_node == self) {
+//         parent = tree->root;
+//         return parent;
+//     }
+//     else {
+//         if(tree->root->l_node) {
+//             Tree left_tree = tree_create();
+//             left_tree.root = tree->root->l_node;
+//             parent = tree_search_parent(&left_tree, self);
 
-            if((parent) && parent->l_node == self) {
-                return parent;
-            }
-        }
+//             if((parent) && parent->l_node == self) {
+//                 return parent;
+//             }
+//         }
 
-        if(tree->root->r_node) {
-            Tree right_tree = tree_create();
-            right_tree.root = tree->root->r_node;
-            parent = tree_search_parent(&right_tree, self);
+//         if(tree->root->r_node) {
+//             Tree right_tree = tree_create();
+//             right_tree.root = tree->root->r_node;
+//             parent = tree_search_parent(&right_tree, self);
 
-            if((parent) && parent->r_node == self) {
-                return parent;
-            }
-        }
+//             if((parent) && parent->r_node == self) {
+//                 return parent;
+//             }
+//         }
 
-        return parent;
-    }
-}
+//         return parent;
+//     }
+// }
 
 struct Node* tree_find_last_right_vertice(struct Node* left_child) {
     struct Node* l_r_v = left_child->r_node;
@@ -426,17 +353,32 @@ int main() {
     Tree tree = tree_create();
 
     //FIXME make as test function to provide filled tree
-    for (int i = 0; i<(sizeof(tree_values)/sizeof(int)); i++) {
+    for (int i = 0; i<(sizeof(tree_values)/sizeof(tree_values[0])); i++) {
         tree_insert_node(&tree.root, tree_values[i]);
     }
 
-    // struct Node* found_node = tree_find(tree.root, 3); FIXME
+    struct Node* node_5 = tree_find(tree.root, 5);
+
+    //    5
+    //   /       \
+//      3        10
+//     / \       /   \
+//    1  4      9    15
+//            /    / \
+//           7    12 18
+//           \    /
+//           8  14
+//              /
+//             13
+    tree_rotate_left(&tree, &node_5);
+    //after right rotation the state as depicted in the beginning of main
+    tree_rotate_right(&tree, &node_5);
     // struct Node* parent_found_node = tree_find_parent(tree.root, 4);
 
-    bool is_erased;
-    is_erased = tree_erase_node(&tree, 10);
-    is_erased = tree_erase_node(&tree, 5);
-    is_erased = tree_erase_node(&tree, 15);
+    // bool is_erased;
+    // is_erased = tree_erase_node(&tree, 10);
+    // is_erased = tree_erase_node(&tree, 5);
+    // is_erased = tree_erase_node(&tree, 15);
 
     // tree_print(tree.root);
     // tree_dfs_traverse(tree.root);
