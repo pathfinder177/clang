@@ -8,109 +8,130 @@
 #define MAX_HEAP_SIZE 100
 
 typedef struct {
-    int size;
-    int last_elem_pos;
+    int front, rear;
     int *array;
 } Heap;
 
 Heap heap_create();
 void heap_free(Heap*);
-static void heap_realloc(Heap*);
 
 void heap_push(Heap*, int);
-
+int heap_peek(Heap*);
+int heap_pop(Heap*);
 void heap_print(Heap*);
 
-void heap_print(Heap* heap) {
+static void heap_realloc(Heap*);
+static void heap_order(int*, int);
+
+void heap_print(Heap* self) {
     int i;
-    if(heap->last_elem_pos < 0) {
+    if (self->rear < 0) {
         fprintf(stderr, "Can not prinf, heap is empty\n");
         abort();
     }
 
-    for(i = 0; i <= heap->last_elem_pos; i++) {
-        printf("%d ", heap->array[i]);
+    for(i = self->front; i <= self->rear; i++) {
+        printf("%d ", self->array[i]);
     }
     printf("\n");
 }
 
 Heap heap_create() {
-    Heap heap;
+    Heap self;
+    self.front = 0;
+    self.rear = -1;
 
-    heap.array = (int *)calloc(heap.size, sizeof(int)); //to init with 0
+    self.array = (int *)calloc(INIT_HEAP_SIZE, sizeof(int)); //to init with 0
 
-    if (heap.array == NULL) {
+    if (self.array == NULL) {
         fprintf(stderr, "Memory allocation failed\n");
         abort();
     }
 
-    heap.size = INIT_HEAP_SIZE;
-    heap.last_elem_pos = -1;
-
-    return heap;
+    return self;
 }
 
-void heap_free(Heap* heap) {
-    free(heap->array);
+void heap_free(Heap* self) {
+    free(self->array);
 
-    heap->array = NULL; //avoid undefined behavior of dangling pointer
-    heap->last_elem_pos = -1;
-    heap->size = INIT_HEAP_SIZE;
+    self->array = NULL; //avoid undefined behavior of dangling pointer
+    self->front = 0;
+    self->rear = -1;
 }
 
-static void heap_realloc(Heap* heap) {
-    if (heap->size >= MAX_HEAP_SIZE) {
+static void heap_realloc(Heap* self) {
+    int new_heap_size = self->rear + HEAP_SIZE_CHANGE;
+
+    if (new_heap_size > MAX_HEAP_SIZE) {
         fprintf(stderr, "Heap exceeds max size\n");
         abort();
     }
 
-    int new_heap_size = heap->size + HEAP_SIZE_CHANGE;
-    int *tmp = (int *)realloc(heap->array, new_heap_size*sizeof(int));
+    int *tmp = (int *)realloc(self->array, new_heap_size*sizeof(int));
 
     if (tmp == NULL) {
         fprintf(stderr, "Reallocation to increase size failed\n");
         abort();
     }
 
-    heap->size = new_heap_size;
-    heap->array = tmp;
+    self->array = tmp;
 }
 
-void heap_push(Heap* heap, int value) {
-    if(heap->array[0] == 0) { //heap is empty
-        heap->array[0] = value;
-        heap->last_elem_pos = 0;
-    }
-    else {
-        //TODO check whether heap is full and need additional memory
-
-        int parent = (heap->last_elem_pos - 1) / 2;
-        int left_child = 2 * parent + 1;
-        int right_child = 2 * parent + 2;
-
-        if(value <= heap->array[parent]) { //insert in the end
-            if(heap->array[left_child] == 0) {
-                heap->array[left_child] = value;
-            }
-            else if(heap->array[right_child] == 0) {
-                heap->array[right_child] = value;
-            }
+void heap_push(Heap* self, int value) {
+        if((self->rear + 1) >= (self->rear + HEAP_SIZE_CHANGE)) {
+            fprintf(stdout, "Heap reallocation occurs\n");
+            heap_realloc(self);
         }
-        else { //swap with parent and keep binary heap properties
-            int tmp;
 
-            if(heap->array[left_child] == 0) {
-                heap->array[left_child] = heap->array[parent];
+        self->rear++;
+        self->array[self->rear] = value;
+
+        heap_order(self->array, self->rear);
+}
+
+static void heap_order(int* heap_values, int heap_size) { //took from Stevens book and analyzed
+    int i, index, parent, tmp;
+
+    for(i = 0; i <= heap_size; i++) {
+        index = i;
+
+        while (index != 0) {
+            parent = (index - 1) / 2;
+
+            if (heap_values[index] <= heap_values[parent]) {
+                break;
             }
-            else if(heap->array[right_child] == 0) {
-                heap->array[right_child] = heap->array[parent];
-            }
 
-            heap->array[parent] = value;
+            tmp = heap_values[index];
+            heap_values[index] = heap_values[parent];
+            heap_values[parent] = tmp;
 
-            heap->last_elem_pos++;
+            index = parent;
         }
     }
+}
+
+int heap_peek(Heap* self) {
+    if (self->rear >= 0) {
+        return self->array[self->front];
+    }
+
+    fprintf(stderr, "Heap is empty\n");
+    abort();
+}
+
+int heap_pop(Heap* self) {
+    if (self->rear >= 0) {
+        int top_elem = self->array[self->front];
+
+        self->array[self->front] = 0;
+        self->front++;
+
+        return top_elem;
+    }
+
+    fprintf(stderr, "Heap is empty\n");
+    abort();
 }
 
 int main() {
@@ -123,6 +144,22 @@ int main() {
     for(i=0; i < (sizeof(heap_values)/sizeof(heap_values[0])); i++) {
         heap_push(&heap, heap_values[i]);
     }
+
+    //[18, 14, 15, 9, 12, 13, 1, 4, 5, 7, 10, 3, 8]
+    heap_print(&heap);
+
+    //18
+    int peek_value = heap_peek(&heap);
+
+    //18
+    int pop_value_1 = heap_pop(&heap);
+    //14
+    int pop_value_2 = heap_pop(&heap);
+    //15
+    int pop_value_3 = heap_pop(&heap);
+
+     //[9, 12, 13, 1, 4, 5, 7, 10, 3, 8]
+    heap_print(&heap);
 
     heap_free(&heap);
 
