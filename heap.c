@@ -1,27 +1,5 @@
-//Binary MAX heap implementation
-#include <stdio.h>
-#include <stdlib.h>
-
-
-#define INIT_HEAP_SIZE 10
-#define HEAP_SIZE_CHANGE 5
-#define MAX_HEAP_SIZE 100
-
-typedef struct {
-    int front, rear;
-    int *array;
-} Heap;
-
-Heap heap_create();
-void heap_free(Heap*);
-
-void heap_push(Heap*, int);
-int heap_peek(Heap*);
-int heap_pop(Heap*);
-void heap_print(Heap*);
-
-static void heap_realloc(Heap*);
-static void heap_order(int*, int);
+//Binary MAX heap implementation based on regular queue
+#include "heap.h"
 
 void heap_print(Heap* self) {
     int i;
@@ -132,36 +110,4 @@ int heap_pop(Heap* self) {
 
     fprintf(stderr, "Heap is empty\n");
     abort();
-}
-
-int main() {
-
-    int heap_values[] = {10,5,3,9,7,8,1,4,15,12,14,13,18};
-
-    Heap heap = heap_create();
-
-    int i;
-    for(i=0; i < (sizeof(heap_values)/sizeof(heap_values[0])); i++) {
-        heap_push(&heap, heap_values[i]);
-    }
-
-    //[18, 14, 15, 9, 12, 13, 1, 4, 5, 7, 10, 3, 8]
-    heap_print(&heap);
-
-    //18
-    int peek_value = heap_peek(&heap);
-
-    //18
-    int pop_value_1 = heap_pop(&heap);
-    //14
-    int pop_value_2 = heap_pop(&heap);
-    //15
-    int pop_value_3 = heap_pop(&heap);
-
-     //[9, 12, 13, 1, 4, 5, 7, 10, 3, 8]
-    heap_print(&heap);
-
-    heap_free(&heap);
-
-    return 0;
 }
