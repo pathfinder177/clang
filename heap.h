@@ -12,6 +12,7 @@ typedef struct {
 
 Heap heap_create();
 void heap_free(Heap*);
+void heap_order(int*, int);
 
 void heap_push(Heap*, int);
 int heap_peek(Heap*);
@@ -19,4 +20,4 @@ int heap_pop(Heap*);
 void heap_print(Heap*);
 
 static void heap_realloc(Heap*);
-static void heap_order(int*, int);
+static void heapify(int*, int);
