@@ -42,21 +42,21 @@ int p_queue_pop(Heap* self) {
 }
 
 static void p_queue_pop_order(int* p_queue_values, int p_queue_size) {
-    int parent = 0;
+    int index = 0;
     int l_child, r_child, swap_child, tmp;
 
     while(1) {
-        l_child = 2 * parent + 1;
-        r_child = 2 * parent + 2;
+        l_child = 2 * index + 1;
+        r_child = 2 * index + 2;
 
-        if(l_child >= p_queue_size) {
-            l_child = parent;
+        if(l_child > p_queue_size) {
+            l_child = index;
         }
-        if(r_child >= p_queue_size) {
-            r_child = parent;
+        if(r_child > p_queue_size) {
+            r_child = index;
         }
 
-        if(p_queue_values[parent] >= p_queue_values[l_child] && p_queue_values[parent] >= p_queue_values[r_child]) {
+        if(p_queue_values[index] >= p_queue_values[l_child] && p_queue_values[index] >= p_queue_values[r_child]) {
             break;
         }
 
@@ -67,11 +67,11 @@ static void p_queue_pop_order(int* p_queue_values, int p_queue_size) {
             swap_child = r_child;
         }
 
-        tmp = p_queue_values[parent];
-        p_queue_values[parent] = p_queue_values[swap_child];
+        tmp = p_queue_values[index];
+        p_queue_values[index] = p_queue_values[swap_child];
         p_queue_values[swap_child] = tmp;
 
-        parent = swap_child;
+        index = swap_child;
 
     }
 }
