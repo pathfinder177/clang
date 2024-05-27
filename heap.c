@@ -64,16 +64,66 @@ void heap_push(Heap* self, int value) {
         self->rear++;
         self->array[self->rear] = value;
 
-        heap_order(self->array, self->rear);
+        heapify(self->array, self->rear);
 }
 
-static void heap_order(int* heap_values, int heap_size) { //took from Stevens book and analyzed
-    int i, index, parent, tmp;
+/*
+maintain heap property
+O(n) complexity
+*/
+static void heapify(int* heap_values, int heap_size) {
+    int i, index, left, right, largest, tmp;
 
-    for(i = 0; i <= heap_size; i++) {
+    // Start from the last non-leaf node and move upwards
+    for (i = heap_size / 2; i >= 0; i--) {
         index = i;
 
-        while (index != 0) {
+        // Perform sift-down operation
+        while (1) {
+            left = 2 * index + 1;
+            right = 2 * index + 2;
+            largest = index;
+
+            // Compare with left child
+            if (left <= heap_size && heap_values[left] > heap_values[largest]) {
+                largest = left;
+            }
+
+            // Compare with right child
+            if (right <= heap_size && heap_values[right] > heap_values[largest]) {
+                largest = right;
+            }
+
+            // If the largest is not the parent, swap and continue
+            if (largest != index) {
+                tmp = heap_values[index];
+                heap_values[index] = heap_values[largest];
+                heap_values[largest] = tmp;
+
+                index = largest;  // Move down to the largest child
+            } else {
+                break;  // Heap property is restored
+            }
+        }
+    }
+}
+
+
+
+/*
+took from Stevens book and analyzed:
+    how to turn unordered array to heap
+    insertion-based approach.
+    O(n log(n))
+
+*/
+void heap_order(int* heap_values, int heap_size) {
+    int i, index, parent, tmp;
+
+    for(i = 0; i < heap_size; i++) { //n in any case
+        index = i;
+
+        while (index != 0) { //log(n) in worst case
             parent = (index - 1) / 2;
 
             if (heap_values[index] <= heap_values[parent]) {
