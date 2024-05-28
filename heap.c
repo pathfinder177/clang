@@ -64,7 +64,7 @@ void heap_push(Heap* self, int value) {
         self->rear++;
         self->array[self->rear] = value;
 
-        heapify(self->array, self->rear);
+        heapify(self->array, self->rear+1);
 }
 
 /*
@@ -75,7 +75,7 @@ static void heapify(int* heap_values, int heap_size) {
     int i, index, left, right, largest, tmp;
 
     // Start from the last non-leaf node and move upwards
-    for (i = heap_size / 2; i >= 0; i--) {
+    for (i = (heap_size - 1) / 2; i >= 0; i--) {
         index = i;
 
         // Perform sift-down operation
@@ -120,10 +120,10 @@ took from Stevens book and analyzed:
 void heap_order(int* heap_values, int heap_size) {
     int i, index, parent, tmp;
 
-    for(i = 0; i < heap_size; i++) { //n in any case
+    for(i = 0; i < heap_size; i++) { //n
         index = i;
 
-        while (index != 0) { //log(n) in worst case
+        while (index != 0) { //log(n)
             parent = (index - 1) / 2;
 
             if (heap_values[index] <= heap_values[parent]) {
