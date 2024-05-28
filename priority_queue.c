@@ -35,7 +35,7 @@ int p_queue_pop(Heap* self) {
     self->array[self->rear] = top_elem;
     self->array[self->rear--] = 0;
 
-    p_queue_pop_order(self->array, self->rear);
+    p_queue_pop_order(self->array, self->rear + 1);
 
     return top_elem;
 
@@ -49,10 +49,10 @@ static void p_queue_pop_order(int* p_queue_values, int p_queue_size) {
         l_child = 2 * index + 1;
         r_child = 2 * index + 2;
 
-        if(l_child > p_queue_size) {
+        if(l_child >= p_queue_size) {
             l_child = index;
         }
-        if(r_child > p_queue_size) {
+        if(r_child >= p_queue_size) {
             r_child = index;
         }
 
