@@ -7,8 +7,6 @@
 // #include "graph_hash_table.c"
 
 #define GRAPH_VERTICES_TABLE_SIZE 10
-#define NEIGHBORS_TABLE_SIZE 10
-
 
 typedef struct {
     struct Graph_vertice_neighbor *next;
