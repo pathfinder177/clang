@@ -7,20 +7,21 @@
 // #include "graph_hash_table.c"
 
 #define GRAPH_VERTICES_TABLE_SIZE 10
+#define GRAPH_NEIGHBORS_TABLE_SIZE 5
 
 typedef struct {
-    struct Graph_vertice_neighbor *next;
     char *name;
     int weight;
 } Graph_vertice_neighbor;
 
 typedef struct {
-    struct Graph_vertice_neighbor *next;
     char* name;
+    Graph_vertice_neighbor *neigbors;
 } Graph_vertice;
 
 
 typedef struct {
+    int vertices_counter;
     Graph_vertice *vertices_table[GRAPH_VERTICES_TABLE_SIZE];
 } Graph;
 
@@ -31,7 +32,6 @@ void graph_list(Graph *);
 void graph_add_vertice(Graph*, char *);
 void graph_erase_vertice(Graph*, char *);
 Graph_vertice* graph_get_vertice(char *);
-Graph_vertice** graph_get_vertices(Graph *);
 
 void graph_add_edge(Graph*, char *, char *, int);
 void graph_erase_edge(Graph*, char *, char *);
@@ -72,12 +72,6 @@ void graph_erase_edge(Graph *self, char *from_v1, char *to_v2) {
     ;
 }
 
-/*
-    return array of pointers to all vertices in Graph
-*/
-Graph_vertice** graph_get_vertices(Graph *self) {
-    ;
-}
 
 /*
     return vertice name from graph_vertices_table if there is a vertice
@@ -101,6 +95,7 @@ void graph_erase_vertice(Graph* self, char *name) {
 */
 void graph_add_vertice(Graph* self, char *name) {
     Graph_vertice *new_vertice;
+    Graph_vertice_neighbor *neighbors_array;
     unsigned hashval;
 
     // if((new_vertice = graph_get_vertice(self, name)) == NULL) {
@@ -109,16 +104,23 @@ void graph_add_vertice(Graph* self, char *name) {
     if (new_vertice == NULL) {
             fprintf(stderr, "memalloc for Graph_vertice failed");
             abort();
-        }
+    }
+
+    //FIXME place in apart static function
+    neighbors_array = (void *) calloc(GRAPH_NEIGHBORS_TABLE_SIZE, sizeof(Graph_vertice_neighbor));
+    if (neighbors_array == NULL) {
+            fprintf(stderr, "memalloc for Neighbors array failed");
+            abort();
+    }
+
+    new_vertice->neigbors = neighbors_array; //FIXME to NULL
+    new_vertice->name = name;
 
     hashval = hash(name);
 
-    new_vertice->name = name;
-    new_vertice->next = NULL;
-
     self->vertices_table[hashval] = new_vertice;
+    self->vertices_counter++;
     // }
-
 
 }
 
@@ -128,6 +130,7 @@ Empty graph keeps empty vertices_table
 */
 Graph graph_create() {
     Graph graph;
+    graph.vertices_counter = 0;
 
     return graph;
 }
