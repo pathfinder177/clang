@@ -13,7 +13,7 @@
 typedef struct {
     struct Graph_vertice_neighbor *next;
     char *name;
-    int *weight;
+    int weight;
 } Graph_vertice_neighbor;
 
 typedef struct {
