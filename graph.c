@@ -4,53 +4,45 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
-// #include "graph_hash_table.c"
+#include <glib.h>
 
-#define GRAPH_VERTICES_TABLE_SIZE 10
+#define GRAPH_SIZE 5
 #define GRAPH_NEIGHBORS_TABLE_SIZE 5
 
 typedef struct {
-    char *name;
+    int index;
     int weight;
 } Graph_vertice_neighbor;
 
 typedef struct {
-    char* name;
-    Graph_vertice_neighbor *neigbors;
+    int index;
+    GArray *neigbors;
 } Graph_vertice;
 
 
 typedef struct {
-    int vertices_counter;
-    Graph_vertice *vertices_table[GRAPH_VERTICES_TABLE_SIZE];
+    GHashTable *vertices_table;
 } Graph;
 
 Graph graph_create();
 void graph_free(Graph *);
 void graph_list(Graph *);
+static void print_key(gpointer, gpointer, gpointer);
 
-void graph_add_vertice(Graph*, char *);
-void graph_erase_vertice(Graph*, char *);
-Graph_vertice* graph_get_vertice(char *);
+void graph_add_vertice(Graph *, int);
+bool graph_erase_vertice(Graph *, int);
+Graph_vertice* graph_get_vertice(int);
 
-void graph_add_edge(Graph*, char *, char *, int);
-void graph_erase_edge(Graph*, char *, char *);
+void graph_add_edge(Graph *, int, int, int);
+void graph_erase_edge(Graph *, int, int);
 
-unsigned hash(char *); //FIXME define in other file
-
-unsigned hash(char *s)
-{
-    unsigned hashval;
-
-    for (hashval = 0; *s != '\0'; s++)
-        hashval = *s + 31 * hashval;
-
-    return hashval % GRAPH_VERTICES_TABLE_SIZE;
+static void print_key(gpointer key, gpointer value, gpointer user_data) {
+    printf("Key: %d\n", GPOINTER_TO_INT(key));
 }
 
-/*print all vertices names in graph*/
+/*print all vertices indexes in graph*/
 void graph_list(Graph *self) {
-    ;
+    g_hash_table_foreach(self->vertices_table, print_key, NULL);
 }
 
 /*
@@ -60,89 +52,93 @@ void graph_list(Graph *self) {
     if there is already an edge between from_v1&to_v2: show warning about change and set new weight
     if there is an edge from to_v2 to from_v1: error as the graph is simple
 */
-void graph_add_edge(Graph* self, char *from_v1, char *to_v2, int weight) {
+void graph_add_edge(Graph* self, int from_v1, int to_v2, int weight) {
     ;
 }
 
 /*
     erase edge from_v1 to_v2 if there is an edge
-    namely delete neighbor of from_v1 vertice and keep list of neighbors in order
+    namely delete neighbor of from_v1 vertice
 */
-void graph_erase_edge(Graph *self, char *from_v1, char *to_v2) {
+void graph_erase_edge(Graph *self, int from_v1, int to_v2) {
     ;
 }
 
 
 /*
-    return vertice name from graph_vertices_table if there is a vertice
+    return pointer to vertice from graph_vertices_table if there is a vertice
 */
-Graph_vertice* graph_get_vertice(char *name) {
+Graph_vertice* graph_get_vertice(int index) {
     ;
 }
 
 /*
+    erase vertice from neigbors table of other vertices, then
     erase vertice from graph_vertices_table
-    if vertice has neighbors:
-        keep neighbor list ordered for other vertices
-        e.g. erase n3 and n2 has neighbors list n1->n3->n5 then n2 has n1->n5 after erasing n3
 */
-void graph_erase_vertice(Graph* self, char *name) {
-    ;
+bool graph_erase_vertice(Graph* self, int index) {
+    int* p_index = &index;
+
+    //TODO: remove vertice from neighbors tables
+
+    return g_hash_table_remove(self->vertices_table, p_index);
 }
 
 /*
     add a new vertice without neighbors to graph_vertices_table
 */
-void graph_add_vertice(Graph* self, char *name) {
+void graph_add_vertice(Graph* self, int index) {
+    bool is_in_table;
+    int* p_index = &index;
     Graph_vertice *new_vertice;
-    Graph_vertice_neighbor *neighbors_array;
-    unsigned hashval;
 
-    // if((new_vertice = graph_get_vertice(self, name)) == NULL) {
+    if((is_in_table = g_hash_table_contains(self->vertices_table, p_index)) == FALSE) {
 
-    new_vertice = (Graph_vertice *) malloc(sizeof(*new_vertice));
-    if (new_vertice == NULL) {
-            fprintf(stderr, "memalloc for Graph_vertice failed");
-            abort();
+        new_vertice = (Graph_vertice *) malloc(sizeof(*new_vertice));
+        if (new_vertice == NULL) {
+                fprintf(stderr, "memalloc for Graph_vertice failed");
+                abort();
+        }
+
+        new_vertice->index = index;
+        new_vertice->neigbors = NULL;
+
+        g_hash_table_insert(self->vertices_table, p_index, new_vertice);
     }
-
-    //FIXME place in apart static function
-    neighbors_array = (void *) calloc(GRAPH_NEIGHBORS_TABLE_SIZE, sizeof(Graph_vertice_neighbor));
-    if (neighbors_array == NULL) {
-            fprintf(stderr, "memalloc for Neighbors array failed");
-            abort();
-    }
-
-    new_vertice->neigbors = neighbors_array; //FIXME to NULL
-    new_vertice->name = name;
-
-    hashval = hash(name);
-
-    self->vertices_table[hashval] = new_vertice;
-    self->vertices_counter++;
-    // }
 
 }
 
 /*
 Create a new empty graph on stack
-Empty graph keeps empty vertices_table
+Graph keeps empty vertices_table
 */
 Graph graph_create() {
     Graph graph;
-    graph.vertices_counter = 0;
+    graph.vertices_table = g_hash_table_new(g_int_hash, g_int_equal);
 
     return graph;
 }
 
 int main() {
-    char* vertice_names[] = {"n0", "n1", "n2", "n3", "n4"};
     Graph graph = graph_create();
+    Graph* p_graph = &graph;
 
+    //vertices with indexes from 0 to 5
     int i;
-    for (i = 0; i < 5; i++) {
-        graph_add_vertice(&graph, vertice_names[i]);
+    for (i = 1; i <= GRAPH_SIZE+1; i++) {
+        graph_add_vertice(p_graph, i);
     }
+
+    // graph_list(p_graph);
+
+    //0,1,2,4,5
+    graph_erase_vertice(p_graph, 3);
+
+    // graph_list(p_graph);
+    g_hash_table_foreach(p_graph->vertices_table, print_key, NULL);
+
+    g_hash_table_destroy(p_graph->vertices_table);
+    // graph_free(p_graph);
 
     return 0;
 }
