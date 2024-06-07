@@ -19,7 +19,6 @@ typedef struct {
     GArray *neigbors;
 } Graph_vertice;
 
-
 typedef struct {
     GHashTable *vertices_table;
 } Graph;
@@ -27,7 +26,6 @@ typedef struct {
 Graph graph_create();
 void graph_free(Graph *);
 void graph_list(Graph *);
-static void print_key(gpointer, gpointer, gpointer);
 
 void graph_add_vertice(Graph *, int);
 bool graph_erase_vertice(Graph *, int);
@@ -36,13 +34,15 @@ Graph_vertice* graph_get_vertice(int);
 void graph_add_edge(Graph *, int, int, int);
 void graph_erase_edge(Graph *, int, int);
 
-static void print_key(gpointer key, gpointer value, gpointer user_data) {
-    printf("Key: %d\n", GPOINTER_TO_INT(key));
-}
 
 /*print all vertices indexes in graph*/
 void graph_list(Graph *self) {
-    g_hash_table_foreach(self->vertices_table, print_key, NULL);
+    GList* glist = g_hash_table_get_keys(self->vertices_table);
+
+    while(glist != NULL) {
+        printf("%d\n", *((int *)(glist->data)));
+        glist = glist->next;
+    }
 }
 
 /*
@@ -77,9 +77,8 @@ Graph_vertice* graph_get_vertice(int index) {
     erase vertice from graph_vertices_table
 */
 bool graph_erase_vertice(Graph* self, int index) {
-    int* p_index = &index;
-
-    //TODO: remove vertice from neighbors tables
+    int* p_index = (int *) malloc(sizeof(index));
+    *p_index = index;
 
     return g_hash_table_remove(self->vertices_table, p_index);
 }
@@ -89,8 +88,10 @@ bool graph_erase_vertice(Graph* self, int index) {
 */
 void graph_add_vertice(Graph* self, int index) {
     bool is_in_table;
-    int* p_index = &index;
     Graph_vertice *new_vertice;
+
+    int* p_index = (int *) malloc(sizeof(index));
+    *p_index = index;
 
     if((is_in_table = g_hash_table_contains(self->vertices_table, p_index)) == FALSE) {
 
@@ -105,7 +106,6 @@ void graph_add_vertice(Graph* self, int index) {
 
         g_hash_table_insert(self->vertices_table, p_index, new_vertice);
     }
-
 }
 
 /*
@@ -114,31 +114,34 @@ Graph keeps empty vertices_table
 */
 Graph graph_create() {
     Graph graph;
-    graph.vertices_table = g_hash_table_new(g_int_hash, g_int_equal);
+
+    graph.vertices_table = g_hash_table_new_full(g_int_hash, g_int_equal, free, free);
 
     return graph;
+}
+
+void graph_free(Graph *self) {
+    g_hash_table_destroy(self->vertices_table);
 }
 
 int main() {
     Graph graph = graph_create();
     Graph* p_graph = &graph;
 
-    //vertices with indexes from 0 to 5
+    //vertices with indexes from 1 to 5
     int i;
-    for (i = 1; i <= GRAPH_SIZE+1; i++) {
+    for (i = 0; i <= GRAPH_SIZE; i++) {
         graph_add_vertice(p_graph, i);
     }
-
-    // graph_list(p_graph);
 
     //0,1,2,4,5
     graph_erase_vertice(p_graph, 3);
 
-    // graph_list(p_graph);
-    g_hash_table_foreach(p_graph->vertices_table, print_key, NULL);
+    graph_list(p_graph);
 
-    g_hash_table_destroy(p_graph->vertices_table);
-    // graph_free(p_graph);
+    graph_free(p_graph);
+
+    // graph_list(p_graph);
 
     return 0;
 }
