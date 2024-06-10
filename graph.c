@@ -33,7 +33,8 @@ Graph_vertice* graph_get_vertice(Graph *, int);
 
 void graph_add_edge(Graph *, int, int, int);
 void graph_erase_edge(Graph *, int, int);
-
+static Graph_vertice_neighbor* graph_find_neighbor(GArray *, int);
+static void graph_add_neighbors_table(Graph_vertice *);
 
 /*print all vertices indexes in graph*/
 void graph_list(Graph *self) {
@@ -49,23 +50,123 @@ void graph_list(Graph *self) {
     g_list_free(glist);
 }
 
-/*
-    add a new weighted directed edge to the graph that connects two vertices
-    if there is already an edge between from_v1&to_v2: update weight
-    if there is an edge from to_v2 to from_v1: error as the graph is simple
-*/
-void graph_add_edge(Graph* self, int from_v1, int to_v2, int weight) {
-    if (graph_is_null_pointer(self)) {
-        fprintf(stderr, "graph pointer is equal to NULL");
+static void graph_add_neighbors_table (Graph_vertice *self) {
+    bool is_zero_terminated = FALSE;
+    bool is_clear = TRUE;
+    guint size = (guint) sizeof(Graph_vertice_neighbor);
+
+    self->neigbors = g_array_new(is_zero_terminated, is_clear, size);
+    g_array_set_size(self->neigbors, (guint) GRAPH_NEIGHBORS_TABLE_SIZE);
+
+    if(self->neigbors == NULL) {
+        fprintf(stderr, "Failure neighbors allocation");
         abort();
     }
 }
 
+static Graph_vertice_neighbor* graph_find_neighbor(GArray *neighbors, int index) {
+    if (neighbors == NULL) {
+        fprintf(stderr, "neighbors pointer is equal to NULL");
+        abort();
+    }
+
+    for(guint i = 0; i < neighbors->len; i++) {
+        Graph_vertice_neighbor *n = neighbors->data[i];
+        if (n->index == index) {
+            return n;
+        }
+    }
+
+    return NULL;
+}
+
 /*
-    erase edge from_v1 to_v2 if there is an edge
-    namely delete neighbor of from_v1 vertice
+    add a new weighted directed edge to the graph that connects two vertices
+    if there is already an edge between from_vertice&to_vertice: update weight
+    if there is an edge from to_vertice to from_vertice: error as the graph is simple
 */
-void graph_erase_edge(Graph *self, int from_v1, int to_v2) {
+void graph_add_edge(Graph* self, int from_vertice, int to_vertice, int weight) {
+    Graph_vertice* src;
+    Graph_vertice* dest;
+
+    if (graph_is_null_pointer(self)) {
+        fprintf(stderr, "graph pointer is equal to NULL");
+        abort();
+    }
+
+    if (weight <= 0) {
+        fprintf(stderr, "Weight should be > 0");
+        abort();
+    }
+
+    src = graph_get_vertice(self, from_vertice);
+    dest = graph_get_vertice(self, to_vertice);
+
+    if((src == NULL) || dest == NULL ) {
+        fprintf(stderr, "Src or dest vertice does not exist");
+        abort();
+    }
+
+    if (dest->neigbors != NULL) {
+        if (dest->neigbors->len > 0) {
+            Graph_vertice_neighbor* n;
+            GArray *dest_neighbors = dest->neigbors;
+
+            if((n = graph_find_neighbor(dest_neighbors, from_vertice)) != NULL) {
+                n = NULL;
+                dest_neighbors = NULL;
+                free(src);
+                free(dest);
+
+                fprintf(stderr, "Reverse path is found in dest vertice");
+                abort();
+            }
+
+            n = NULL;
+            dest_neighbors = NULL;
+        }
+    }
+
+    if (src->neigbors != NULL) {
+        if (src->neigbors->len > 0) {
+            Graph_vertice_neighbor* n;
+            GArray *src_neighbors = src->neigbors;
+
+            if((n = graph_find_neighbor(src_neighbors, to_vertice)) != NULL) {
+                n->weight = weight;
+
+                free(src);
+                free(dest);
+                src_neighbors = NULL;
+                n = NULL;
+
+                return;
+            }
+        }
+    }
+    else {
+        graph_add_neighbors_table(src);
+    }
+
+    //TODO to function
+    Graph_vertice_neighbor* new_neighbor;
+    if ((new_neighbor = (Graph_vertice_neighbor *) malloc(sizeof(*new_neighbor))) == NULL) {
+        fprintf(stderr, "memalloc for Graph_vertice_neighbor failed");
+        abort();
+    }
+
+    new_neighbor->index = to_vertice;
+    new_neighbor->weight = weight;
+
+    g_array_append_val(src->neigbors, new_neighbor);
+
+}
+
+/*
+    erase edge from_vertice to_vertice if there is an edge
+    namely delete neighbor of from_vertice vertice
+*/
+void graph_erase_edge(Graph *self, int from_vertice, int to_vertice) {
     if (graph_is_null_pointer(self)) {
         fprintf(stderr, "graph pointer is equal to NULL");
         abort();
@@ -80,12 +181,12 @@ static bool graph_is_null_pointer(Graph *self) {
     return pointer to vertice from graph_vertices_table if there is a vertice
 */
 Graph_vertice* graph_get_vertice(Graph* self, int index) {
+    int* p_index;
+
     if (graph_is_null_pointer(self)) {
         fprintf(stderr, "graph pointer is equal to NULL");
         abort();
     }
-
-    int* p_index;
 
     if ((p_index = (int *) malloc(sizeof(index))) == NULL) {
         fprintf(stderr, "memalloc for index failed");
@@ -104,12 +205,12 @@ Graph_vertice* graph_get_vertice(Graph* self, int index) {
     erase vertice from graph_vertices_table
 */
 bool graph_erase_vertice(Graph* self, int index) {
+    int* p_index;
+
     if (graph_is_null_pointer(self)) {
         fprintf(stderr, "graph pointer is equal to NULL");
         abort();
     }
-
-    int* p_index;
 
     if ((p_index = (int *) malloc(sizeof(index))) == NULL) {
         fprintf(stderr, "memalloc for index failed");
@@ -127,14 +228,14 @@ bool graph_erase_vertice(Graph* self, int index) {
     add a new vertice without neighbors to graph_vertices_table
 */
 void graph_add_vertice(Graph* self, int index) {
+    bool is_in_table;
+    int* p_index;
+    Graph_vertice *new_vertice;
+
     if (graph_is_null_pointer(self)) {
         fprintf(stderr, "graph pointer is equal to NULL");
         abort();
     }
-
-    bool is_in_table;
-    int* p_index;
-    Graph_vertice *new_vertice;
 
     if ((p_index = (int *) malloc(sizeof(index))) == NULL) {
         fprintf(stderr, "memalloc for index failed");
@@ -193,7 +294,7 @@ int main() {
     //pointer to vertice with index 1
     Graph_vertice *v_1 = graph_get_vertice(p_graph, 1);
 
-    // graph_add_edge(p_graph, 1, 2, 4);
+    graph_add_edge(p_graph, 1, 2, 4);
 
     graph_list(p_graph);
 
