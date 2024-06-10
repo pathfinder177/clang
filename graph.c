@@ -1,5 +1,4 @@
-//idea: https://runestone.academy/ns/books/published/pythonds3/Graphs/AnAdjacencyList.html
-//Implementation of simple directed cycled weighted graph
+//Implementation of simple directed regular cycled weighted graph
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -26,10 +25,11 @@ typedef struct {
 Graph graph_create();
 void graph_free(Graph *);
 void graph_list(Graph *);
+static bool graph_is_null_pointer(Graph *);
 
 void graph_add_vertice(Graph *, int);
 bool graph_erase_vertice(Graph *, int);
-Graph_vertice* graph_get_vertice(int);
+Graph_vertice* graph_get_vertice(Graph *, int);
 
 void graph_add_edge(Graph *, int, int, int);
 void graph_erase_edge(Graph *, int, int);
@@ -37,23 +37,28 @@ void graph_erase_edge(Graph *, int, int);
 
 /*print all vertices indexes in graph*/
 void graph_list(Graph *self) {
+    //allocate mem
     GList* glist = g_hash_table_get_keys(self->vertices_table);
 
     while(glist != NULL) {
         printf("%d\n", *((int *)(glist->data)));
         glist = glist->next;
     }
+
+    //dellocate mem
+    g_list_free(glist);
 }
 
 /*
     add a new weighted directed edge to the graph that connects two vertices
-    list of neighbors for any vertice should be ordered, e.g.: n2, n4, n5
-    thus the function takes it into account as well
-    if there is already an edge between from_v1&to_v2: show warning about change and set new weight
+    if there is already an edge between from_v1&to_v2: update weight
     if there is an edge from to_v2 to from_v1: error as the graph is simple
 */
 void graph_add_edge(Graph* self, int from_v1, int to_v2, int weight) {
-    ;
+    if (graph_is_null_pointer(self)) {
+        fprintf(stderr, "graph pointer is equal to NULL");
+        abort();
+    }
 }
 
 /*
@@ -61,15 +66,37 @@ void graph_add_edge(Graph* self, int from_v1, int to_v2, int weight) {
     namely delete neighbor of from_v1 vertice
 */
 void graph_erase_edge(Graph *self, int from_v1, int to_v2) {
-    ;
+    if (graph_is_null_pointer(self)) {
+        fprintf(stderr, "graph pointer is equal to NULL");
+        abort();
+    }
 }
 
+static bool graph_is_null_pointer(Graph *self) {
+    return self == NULL;
+}
 
 /*
     return pointer to vertice from graph_vertices_table if there is a vertice
 */
-Graph_vertice* graph_get_vertice(int index) {
-    ;
+Graph_vertice* graph_get_vertice(Graph* self, int index) {
+    if (graph_is_null_pointer(self)) {
+        fprintf(stderr, "graph pointer is equal to NULL");
+        abort();
+    }
+
+    int* p_index;
+
+    if ((p_index = (int *) malloc(sizeof(index))) == NULL) {
+        fprintf(stderr, "memalloc for index failed");
+        abort();
+    }
+    *p_index = index;
+
+    Graph_vertice* p_vertice = g_hash_table_lookup(self->vertices_table, p_index);
+    free(p_index);
+
+    return p_vertice;
 }
 
 /*
@@ -77,26 +104,46 @@ Graph_vertice* graph_get_vertice(int index) {
     erase vertice from graph_vertices_table
 */
 bool graph_erase_vertice(Graph* self, int index) {
-    int* p_index = (int *) malloc(sizeof(index));
+    if (graph_is_null_pointer(self)) {
+        fprintf(stderr, "graph pointer is equal to NULL");
+        abort();
+    }
+
+    int* p_index;
+
+    if ((p_index = (int *) malloc(sizeof(index))) == NULL) {
+        fprintf(stderr, "memalloc for index failed");
+        abort();
+    }
     *p_index = index;
 
-    return g_hash_table_remove(self->vertices_table, p_index);
+    bool is_deleted = g_hash_table_remove(self->vertices_table, p_index);
+    free(p_index);
+
+    return is_deleted;
 }
 
 /*
     add a new vertice without neighbors to graph_vertices_table
 */
 void graph_add_vertice(Graph* self, int index) {
+    if (graph_is_null_pointer(self)) {
+        fprintf(stderr, "graph pointer is equal to NULL");
+        abort();
+    }
+
     bool is_in_table;
+    int* p_index;
     Graph_vertice *new_vertice;
 
-    int* p_index = (int *) malloc(sizeof(index));
+    if ((p_index = (int *) malloc(sizeof(index))) == NULL) {
+        fprintf(stderr, "memalloc for index failed");
+        abort();
+    }
     *p_index = index;
 
     if((is_in_table = g_hash_table_contains(self->vertices_table, p_index)) == FALSE) {
-
-        new_vertice = (Graph_vertice *) malloc(sizeof(*new_vertice));
-        if (new_vertice == NULL) {
+        if ((new_vertice = (Graph_vertice *) malloc(sizeof(*new_vertice))) == NULL) {
                 fprintf(stderr, "memalloc for Graph_vertice failed");
                 abort();
         }
@@ -114,13 +161,17 @@ Graph keeps empty vertices_table
 */
 Graph graph_create() {
     Graph graph;
-
-    graph.vertices_table = g_hash_table_new_full(g_int_hash, g_int_equal, free, free);
+    graph.vertices_table = g_hash_table_new(g_int_hash, g_int_equal);
 
     return graph;
 }
 
 void graph_free(Graph *self) {
+    if (graph_is_null_pointer(self)) {
+        fprintf(stdout, "graph pointer is equal to NULL");
+        return;
+    }
+
     g_hash_table_destroy(self->vertices_table);
 }
 
@@ -139,9 +190,16 @@ int main() {
 
     graph_list(p_graph);
 
-    graph_free(p_graph);
+    //pointer to vertice with index 1
+    Graph_vertice *v_1 = graph_get_vertice(p_graph, 1);
 
-    // graph_list(p_graph);
+    // graph_add_edge(p_graph, 1, 2, 4);
+
+    graph_list(p_graph);
+
+
+
+    // graph_free(p_graph);
 
     return 0;
 }
