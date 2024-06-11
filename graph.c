@@ -31,8 +31,8 @@ bool graph_erase_vertice(Graph *, int);
 Graph_vertice* graph_get_vertice(Graph *, int);
 
 void graph_add_edge(Graph *, int, int, int);
-void graph_erase_edge(Graph *, int, int);
-static void graph_add_edge_check_parameters(Graph*, int, int, int);
+bool graph_erase_edge(Graph *, int, int);
+static void graph_edge_function_check_pararameters(Graph*, Graph_vertice*, Graph_vertice*, int, int, int);
 static Graph_vertice_neighbor* graph_find_neighbor(GPtrArray *, int);
 static void graph_add_neighbors_table(Graph_vertice *);
 static void graph_add_new_neighbor(GPtrArray *, int, int);
@@ -51,9 +51,14 @@ void graph_list(Graph *self) {
     g_list_free(glist);
 }
 
-static void graph_add_edge_check_parameters(Graph* self, int from_vertice, int to_vertice, int weight) {
+static void graph_edge_function_check_pararameters(Graph* self, Graph_vertice* src, Graph_vertice* dest, int from_vertice, int to_vertice, int weight) {
     if (graph_is_null_pointer(self)) {
         fprintf(stderr, "graph pointer is equal to NULL");
+        abort();
+    }
+
+    if((src == NULL) || dest == NULL ) {
+        fprintf(stderr, "from_vertice or to_vertice does not exist in graph");
         abort();
     }
 
@@ -110,19 +115,13 @@ static Graph_vertice_neighbor* graph_find_neighbor(GPtrArray *neighbors, int ind
 
 //add a new weighted directed edge to the graph that connects two vertices
 void graph_add_edge(Graph* self, int from_vertice, int to_vertice, int weight) {
-    //TODO break down into functions
     Graph_vertice* src;
     Graph_vertice* dest;
-
-    graph_add_edge_check_parameters(self, from_vertice, to_vertice, weight);
 
     src = graph_get_vertice(self, from_vertice);
     dest = graph_get_vertice(self, to_vertice);
 
-    if((src == NULL) || dest == NULL ) {
-        fprintf(stderr, "from_vertice or to_vertice does not exist in graph");
-        abort();
-    }
+    graph_edge_function_check_pararameters(self, src, dest, from_vertice, to_vertice, weight);
 
     if (dest->neighbors != NULL) {
         if (dest->neighbors->len > 0) {
@@ -163,11 +162,43 @@ void graph_add_edge(Graph* self, int from_vertice, int to_vertice, int weight) {
     erase edge from_vertice to_vertice if there is an edge
     namely delete neighbor of from_vertice vertice
 */
-void graph_erase_edge(Graph *self, int from_vertice, int to_vertice) {
-    if (graph_is_null_pointer(self)) {
-        fprintf(stderr, "graph pointer is equal to NULL");
-        abort();
+bool graph_erase_edge(Graph *self, int from_vertice, int to_vertice) {
+    Graph_vertice* src;
+    Graph_vertice* dest;
+    int stub_weight = 1;
+
+    src = graph_get_vertice(self, from_vertice);
+    dest = graph_get_vertice(self, to_vertice);
+
+    graph_edge_function_check_pararameters(self, src, dest, from_vertice, to_vertice, stub_weight);
+
+
+    if (dest->neighbors != NULL) {
+        if (dest->neighbors->len > 0) {
+            Graph_vertice_neighbor* n;
+
+            if((n = graph_find_neighbor(dest->neighbors, from_vertice)) != NULL) {
+                n = NULL;
+
+                fprintf(stderr, "Path is found in to_vertice. Are index positions correct?");
+                abort();
+            }
+            n = NULL;
+        }
     }
+
+    if (src->neighbors != NULL) {
+        if (src->neighbors->len > 0) {
+            Graph_vertice_neighbor* n;
+
+            if((n = graph_find_neighbor(src->neighbors, to_vertice)) != NULL) {
+                return g_ptr_array_remove(src->neighbors, n);
+            }
+            return FALSE;
+        }
+        return FALSE;
+    }
+    return FALSE;
 }
 
 static bool graph_is_null_pointer(Graph *self) {
@@ -294,11 +325,11 @@ int main() {
     //added
     graph_add_edge(p_graph, 1, 2, 4);
     //abort as graph is not a multigraph
-    graph_add_edge(p_graph, 2, 1, 4);
+    // graph_add_edge(p_graph, 2, 1, 4);
+
+    bool is_edge_erased = graph_erase_edge(p_graph, 1, 2);
 
     graph_list(p_graph);
-
-
 
     // graph_free(p_graph);
 
