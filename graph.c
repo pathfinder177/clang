@@ -290,7 +290,7 @@ Graph keeps empty vertices_table
 */
 Graph graph_create() {
     Graph graph;
-    graph.vertices_table = g_hash_table_new(g_int_hash, g_int_equal);
+    graph.vertices_table = g_hash_table_new_full(g_int_hash, g_int_equal, free, free);
 
     return graph;
 }
@@ -301,7 +301,20 @@ void graph_free(Graph *self) {
         return;
     }
 
+    GList* vertices = g_hash_table_get_keys(self->vertices_table);
+    Graph_vertice* vertice;
+
+    while(vertices != NULL) {
+        vertice = (Graph_vertice*)(vertices->data);
+        g_ptr_array_free(vertice->neighbors, TRUE);
+
+        vertices = vertices->next;
+    }
+
+    g_list_free(vertices);
+
     g_hash_table_destroy(self->vertices_table);
+    g_hash_table_unref(self->vertices_table);
 }
 
 int main() {
@@ -331,7 +344,7 @@ int main() {
 
     graph_list(p_graph);
 
-    // graph_free(p_graph);
+    graph_free(p_graph);
 
     return 0;
 }
