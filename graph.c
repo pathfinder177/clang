@@ -6,7 +6,6 @@
 #include <glib.h>
 
 #define GRAPH_SIZE 5
-#define GRAPH_NEIGHBORS_TABLE_SIZE 5
 
 typedef struct {
     int index;
@@ -15,7 +14,7 @@ typedef struct {
 
 typedef struct {
     int index;
-    GArray *neigbors;
+    GPtrArray *neighbors;
 } Graph_vertice;
 
 typedef struct {
@@ -33,8 +32,10 @@ Graph_vertice* graph_get_vertice(Graph *, int);
 
 void graph_add_edge(Graph *, int, int, int);
 void graph_erase_edge(Graph *, int, int);
-static Graph_vertice_neighbor* graph_find_neighbor(GArray *, int);
+static void graph_add_edge_check_parameters(Graph*, int, int, int);
+static Graph_vertice_neighbor* graph_find_neighbor(GPtrArray *, int);
 static void graph_add_neighbors_table(Graph_vertice *);
+static void graph_add_new_neighbor(GPtrArray *, int, int);
 
 /*print all vertices indexes in graph*/
 void graph_list(Graph *self) {
@@ -50,47 +51,19 @@ void graph_list(Graph *self) {
     g_list_free(glist);
 }
 
-static void graph_add_neighbors_table (Graph_vertice *self) {
-    bool is_zero_terminated = FALSE;
-    bool is_clear = TRUE;
-    guint size = (guint) sizeof(Graph_vertice_neighbor);
-
-    self->neigbors = g_array_new(is_zero_terminated, is_clear, size);
-    g_array_set_size(self->neigbors, (guint) GRAPH_NEIGHBORS_TABLE_SIZE);
-
-    if(self->neigbors == NULL) {
-        fprintf(stderr, "Failure neighbors allocation");
-        abort();
-    }
-}
-
-static Graph_vertice_neighbor* graph_find_neighbor(GArray *neighbors, int index) {
-    if (neighbors == NULL) {
-        fprintf(stderr, "neighbors pointer is equal to NULL");
-        abort();
-    }
-
-    for(guint i = 0; i < neighbors->len; i++) {
-        Graph_vertice_neighbor *n = neighbors->data[i];
-        if (n->index == index) {
-            return n;
-        }
-    }
-
-    return NULL;
-}
-
-/*
-    add a new weighted directed edge to the graph that connects two vertices
-    if there is already an edge between from_vertice&to_vertice: update weight
-    if there is an edge from to_vertice to from_vertice: error as the graph is simple
-*/
-void graph_add_edge(Graph* self, int from_vertice, int to_vertice, int weight) {
-    Graph_vertice* src;
-    Graph_vertice* dest;
-
+static void graph_add_edge_check_parameters(Graph* self, int from_vertice, int to_vertice, int weight) {
     if (graph_is_null_pointer(self)) {
         fprintf(stderr, "graph pointer is equal to NULL");
+        abort();
+    }
+
+    if (from_vertice == to_vertice) {
+        fprintf(stderr, "Self loops in graph is not allowed");
+        abort();
+    }
+
+    if(from_vertice < 0 || to_vertice < 0) {
+        fprintf(stderr, "Vertices indexes should be >= 0");
         abort();
     }
 
@@ -98,46 +71,80 @@ void graph_add_edge(Graph* self, int from_vertice, int to_vertice, int weight) {
         fprintf(stderr, "Weight should be > 0");
         abort();
     }
+}
+
+static void graph_add_new_neighbor(GPtrArray *neighbors, int to_vertice, int weight) {
+    Graph_vertice_neighbor* new_neighbor;
+
+    if ((new_neighbor = (Graph_vertice_neighbor *) malloc(sizeof(*new_neighbor))) == NULL) {
+        fprintf(stderr, "memalloc for Graph_vertice_neighbor failed");
+        abort();
+    }
+
+    new_neighbor->index = to_vertice;
+    new_neighbor->weight = weight;
+
+    g_ptr_array_add(neighbors, new_neighbor);
+}
+
+static void graph_add_neighbors_table(Graph_vertice *self) {
+    GPtrArray *ptr_array = g_ptr_array_new_with_free_func(g_free);
+
+    self->neighbors = ptr_array;
+}
+
+static Graph_vertice_neighbor* graph_find_neighbor(GPtrArray *neighbors, int index) {
+    guint i;
+    Graph_vertice_neighbor* self;
+
+    for (i = 0; i < neighbors->len; i++) {
+        self = g_ptr_array_index(neighbors, i);
+        if(self->index == index) {
+            return self;
+        }
+    }
+
+    return NULL;
+}
+
+
+//add a new weighted directed edge to the graph that connects two vertices
+void graph_add_edge(Graph* self, int from_vertice, int to_vertice, int weight) {
+    //TODO break down into functions
+    Graph_vertice* src;
+    Graph_vertice* dest;
+
+    graph_add_edge_check_parameters(self, from_vertice, to_vertice, weight);
 
     src = graph_get_vertice(self, from_vertice);
     dest = graph_get_vertice(self, to_vertice);
 
     if((src == NULL) || dest == NULL ) {
-        fprintf(stderr, "Src or dest vertice does not exist");
+        fprintf(stderr, "from_vertice or to_vertice does not exist in graph");
         abort();
     }
 
-    if (dest->neigbors != NULL) {
-        if (dest->neigbors->len > 0) {
+    if (dest->neighbors != NULL) {
+        if (dest->neighbors->len > 0) {
             Graph_vertice_neighbor* n;
-            GArray *dest_neighbors = dest->neigbors;
 
-            if((n = graph_find_neighbor(dest_neighbors, from_vertice)) != NULL) {
+            if((n = graph_find_neighbor(dest->neighbors, from_vertice)) != NULL) {
                 n = NULL;
-                dest_neighbors = NULL;
-                free(src);
-                free(dest);
 
-                fprintf(stderr, "Reverse path is found in dest vertice");
+                fprintf(stderr, "Reverse path is found in to_vertice");
                 abort();
             }
 
             n = NULL;
-            dest_neighbors = NULL;
         }
     }
 
-    if (src->neigbors != NULL) {
-        if (src->neigbors->len > 0) {
+    if (src->neighbors != NULL) {
+        if (src->neighbors->len > 0) {
             Graph_vertice_neighbor* n;
-            GArray *src_neighbors = src->neigbors;
 
-            if((n = graph_find_neighbor(src_neighbors, to_vertice)) != NULL) {
+            if((n = graph_find_neighbor(src->neighbors, to_vertice)) != NULL) {
                 n->weight = weight;
-
-                free(src);
-                free(dest);
-                src_neighbors = NULL;
                 n = NULL;
 
                 return;
@@ -148,17 +155,7 @@ void graph_add_edge(Graph* self, int from_vertice, int to_vertice, int weight) {
         graph_add_neighbors_table(src);
     }
 
-    //TODO to function
-    Graph_vertice_neighbor* new_neighbor;
-    if ((new_neighbor = (Graph_vertice_neighbor *) malloc(sizeof(*new_neighbor))) == NULL) {
-        fprintf(stderr, "memalloc for Graph_vertice_neighbor failed");
-        abort();
-    }
-
-    new_neighbor->index = to_vertice;
-    new_neighbor->weight = weight;
-
-    g_array_append_val(src->neigbors, new_neighbor);
+    graph_add_new_neighbor(src->neighbors, to_vertice, weight);
 
 }
 
@@ -201,7 +198,7 @@ Graph_vertice* graph_get_vertice(Graph* self, int index) {
 }
 
 /*
-    erase vertice from neigbors table of other vertices, then
+    erase vertice from neighbors table of other vertices, then
     erase vertice from graph_vertices_table
 */
 bool graph_erase_vertice(Graph* self, int index) {
@@ -250,7 +247,7 @@ void graph_add_vertice(Graph* self, int index) {
         }
 
         new_vertice->index = index;
-        new_vertice->neigbors = NULL;
+        new_vertice->neighbors = NULL;
 
         g_hash_table_insert(self->vertices_table, p_index, new_vertice);
     }
@@ -294,7 +291,10 @@ int main() {
     //pointer to vertice with index 1
     Graph_vertice *v_1 = graph_get_vertice(p_graph, 1);
 
+    //added
     graph_add_edge(p_graph, 1, 2, 4);
+    //abort as graph is not a multigraph
+    graph_add_edge(p_graph, 2, 1, 4);
 
     graph_list(p_graph);
 
