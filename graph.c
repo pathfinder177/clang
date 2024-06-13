@@ -21,18 +21,18 @@ typedef struct {
     GHashTable *vertices_table;
 } Graph;
 
+static int* graph_init_vertices_indexes();
 Graph graph_create();
 void graph_free(Graph *);
 void graph_list(Graph *);
-static bool graph_is_null_pointer(Graph *);
 
-void graph_add_vertice(Graph *, int);
+void graph_add_vertice(Graph *, int *);
 bool graph_erase_vertice(Graph *, int);
 Graph_vertice* graph_get_vertice(Graph *, int);
 
 void graph_add_edge(Graph *, int, int, int);
 bool graph_erase_edge(Graph *, int, int);
-static void graph_edge_function_check_pararameters(Graph*, Graph_vertice*, Graph_vertice*, int, int, int);
+static void graph_edge_function_check_pararameters(Graph *, Graph_vertice *, Graph_vertice *, int, int, int);
 static Graph_vertice_neighbor* graph_find_neighbor(GPtrArray *, int);
 static void graph_add_neighbors_table(Graph_vertice *);
 static void graph_add_new_neighbor(GPtrArray *, int, int);
@@ -51,8 +51,8 @@ void graph_list(Graph *self) {
     g_list_free(glist);
 }
 
-static void graph_edge_function_check_pararameters(Graph* self, Graph_vertice* src, Graph_vertice* dest, int from_vertice, int to_vertice, int weight) {
-    if (graph_is_null_pointer(self)) {
+static void graph_edge_function_check_pararameters(Graph *self, Graph_vertice *src, Graph_vertice *dest, int from_vertice, int to_vertice, int weight) {
+    if (self == NULL) {
         fprintf(stderr, "graph pointer is equal to NULL");
         abort();
     }
@@ -99,10 +99,9 @@ static void graph_add_neighbors_table(Graph_vertice *self) {
 }
 
 static Graph_vertice_neighbor* graph_find_neighbor(GPtrArray *neighbors, int index) {
-    guint i;
     Graph_vertice_neighbor* self;
 
-    for (i = 0; i < neighbors->len; i++) {
+    for (guint i = 0; i < neighbors->len; i++) {
         self = g_ptr_array_index(neighbors, i);
         if(self->index == index) {
             return self;
@@ -125,26 +124,19 @@ void graph_add_edge(Graph* self, int from_vertice, int to_vertice, int weight) {
 
     if (dest->neighbors != NULL) {
         if (dest->neighbors->len > 0) {
-            Graph_vertice_neighbor* n;
-
-            if((n = graph_find_neighbor(dest->neighbors, from_vertice)) != NULL) {
-                n = NULL;
-
+            if(graph_find_neighbor(dest->neighbors, from_vertice) != NULL) {
                 fprintf(stderr, "Reverse path is found in to_vertice");
                 abort();
             }
-
-            n = NULL;
         }
     }
 
     if (src->neighbors != NULL) {
         if (src->neighbors->len > 0) {
-            Graph_vertice_neighbor* n;
+            Graph_vertice_neighbor* n = NULL;
 
             if((n = graph_find_neighbor(src->neighbors, to_vertice)) != NULL) {
                 n->weight = weight;
-                n = NULL;
 
                 return;
             }
@@ -155,7 +147,6 @@ void graph_add_edge(Graph* self, int from_vertice, int to_vertice, int weight) {
     }
 
     graph_add_new_neighbor(src->neighbors, to_vertice, weight);
-
 }
 
 /*
@@ -175,57 +166,37 @@ bool graph_erase_edge(Graph *self, int from_vertice, int to_vertice) {
 
     if (dest->neighbors != NULL) {
         if (dest->neighbors->len > 0) {
-            Graph_vertice_neighbor* n;
-
-            if((n = graph_find_neighbor(dest->neighbors, from_vertice)) != NULL) {
-                n = NULL;
-
+            if(graph_find_neighbor(dest->neighbors, from_vertice) != NULL) {
                 fprintf(stderr, "Path is found in to_vertice. Are index positions correct?");
                 abort();
             }
-            n = NULL;
         }
     }
 
     if (src->neighbors != NULL) {
         if (src->neighbors->len > 0) {
-            Graph_vertice_neighbor* n;
+            Graph_vertice_neighbor* n = NULL;
 
             if((n = graph_find_neighbor(src->neighbors, to_vertice)) != NULL) {
                 return g_ptr_array_remove(src->neighbors, n);
             }
-            return FALSE;
+            return false;
         }
-        return FALSE;
+        return false;
     }
-    return FALSE;
-}
-
-static bool graph_is_null_pointer(Graph *self) {
-    return self == NULL;
+    return false;
 }
 
 /*
     return pointer to vertice from graph_vertices_table if there is a vertice
 */
 Graph_vertice* graph_get_vertice(Graph* self, int index) {
-    int* p_index;
-
-    if (graph_is_null_pointer(self)) {
+    if (self == NULL) {
         fprintf(stderr, "graph pointer is equal to NULL");
         abort();
     }
 
-    if ((p_index = (int *) malloc(sizeof(index))) == NULL) {
-        fprintf(stderr, "memalloc for index failed");
-        abort();
-    }
-    *p_index = index;
-
-    Graph_vertice* p_vertice = g_hash_table_lookup(self->vertices_table, p_index);
-    free(p_index);
-
-    return p_vertice;
+    return g_hash_table_lookup(self->vertices_table, (gconstpointer) &index);
 }
 
 /*
@@ -233,54 +204,36 @@ Graph_vertice* graph_get_vertice(Graph* self, int index) {
     erase vertice from graph_vertices_table
 */
 bool graph_erase_vertice(Graph* self, int index) {
-    int* p_index;
-
-    if (graph_is_null_pointer(self)) {
+    if (self == NULL) {
         fprintf(stderr, "graph pointer is equal to NULL");
         abort();
     }
 
-    if ((p_index = (int *) malloc(sizeof(index))) == NULL) {
-        fprintf(stderr, "memalloc for index failed");
-        abort();
-    }
-    *p_index = index;
-
-    bool is_deleted = g_hash_table_remove(self->vertices_table, p_index);
-    free(p_index);
-
-    return is_deleted;
+    return g_hash_table_remove(self->vertices_table, (gconstpointer) &index);
 }
 
 /*
     add a new vertice without neighbors to graph_vertices_table
 */
-void graph_add_vertice(Graph* self, int index) {
+void graph_add_vertice(Graph* self, int* index) {
     bool is_in_table;
-    int* p_index;
     Graph_vertice *new_vertice;
 
-    if (graph_is_null_pointer(self)) {
+    if (self == NULL) {
         fprintf(stderr, "graph pointer is equal to NULL");
         abort();
     }
 
-    if ((p_index = (int *) malloc(sizeof(index))) == NULL) {
-        fprintf(stderr, "memalloc for index failed");
-        abort();
-    }
-    *p_index = index;
-
-    if((is_in_table = g_hash_table_contains(self->vertices_table, p_index)) == FALSE) {
+    if((is_in_table = g_hash_table_contains(self->vertices_table, index)) == FALSE) {
         if ((new_vertice = (Graph_vertice *) malloc(sizeof(*new_vertice))) == NULL) {
                 fprintf(stderr, "memalloc for Graph_vertice failed");
                 abort();
         }
 
-        new_vertice->index = index;
+        new_vertice->index = *index;
         new_vertice->neighbors = NULL;
 
-        g_hash_table_insert(self->vertices_table, p_index, new_vertice);
+        g_hash_table_insert(self->vertices_table, index, new_vertice);
     }
 }
 
@@ -290,13 +243,13 @@ Graph keeps empty vertices_table
 */
 Graph graph_create() {
     Graph graph;
-    graph.vertices_table = g_hash_table_new_full(g_int_hash, g_int_equal, free, free);
+    graph.vertices_table = g_hash_table_new_full(g_int_hash, g_int_equal, NULL, free);
 
     return graph;
 }
 
 void graph_free(Graph *self) {
-    if (graph_is_null_pointer(self)) {
+    if (self == NULL) {
         fprintf(stdout, "graph pointer is equal to NULL");
         return;
     }
@@ -317,14 +270,30 @@ void graph_free(Graph *self) {
     g_hash_table_unref(self->vertices_table);
 }
 
+static int* graph_init_vertices_indexes() {
+    //static arr also can be used but not so explicit
+    int* arr = (int*)malloc(GRAPH_SIZE * sizeof(int));
+    if (arr == NULL) {
+        printf("Memory allocation failed!\n");
+        return NULL;
+    }
+
+    for (int i = 0; i <= GRAPH_SIZE; i++) {
+        arr[i] = i;
+    }
+
+    return arr;
+}
+
 int main() {
     Graph graph = graph_create();
     Graph* p_graph = &graph;
 
+    int* vertices_indexes = graph_init_vertices_indexes();
+
     //vertices with indexes from 1 to 5
-    int i;
-    for (i = 0; i <= GRAPH_SIZE; i++) {
-        graph_add_vertice(p_graph, i);
+    for (int i = 0; i <= GRAPH_SIZE; i++) {
+        graph_add_vertice(p_graph, &vertices_indexes[i]);
     }
 
     //0,1,2,4,5
@@ -344,7 +313,7 @@ int main() {
 
     graph_list(p_graph);
 
-    graph_free(p_graph);
+    // graph_free(p_graph);
 
     return 0;
 }
