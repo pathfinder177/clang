@@ -23,7 +23,7 @@ typedef struct {
 
 static int* graph_init_vertices_indexes();
 Graph graph_create();
-void graph_free(Graph *);
+void graph_free(Graph **);
 void graph_list(Graph *);
 
 void graph_add_vertice(Graph *, int *);
@@ -248,26 +248,27 @@ Graph graph_create() {
     return graph;
 }
 
-void graph_free(Graph *self) {
-    if (self == NULL) {
+void graph_free(Graph **self) {
+    if ((*self) == NULL) {
         fprintf(stdout, "graph pointer is equal to NULL");
         return;
     }
 
-    GList* vertices = g_hash_table_get_keys(self->vertices_table);
     Graph_vertice* vertice;
+    GList* vertices = g_hash_table_get_values((*self)->vertices_table);
 
     while(vertices != NULL) {
-        vertice = (Graph_vertice*)(vertices->data);
+        vertice = vertices->data;
+
         g_ptr_array_free(vertice->neighbors, TRUE);
+        vertice->neighbors = NULL;
 
         vertices = vertices->next;
     }
 
-    g_list_free(vertices);
-
-    g_hash_table_destroy(self->vertices_table);
-    g_hash_table_unref(self->vertices_table);
+    g_hash_table_destroy((*self)->vertices_table);
+    (*self)->vertices_table = NULL;
+    *self = NULL;
 }
 
 static int* graph_init_vertices_indexes() {
@@ -287,7 +288,8 @@ static int* graph_init_vertices_indexes() {
 
 int main() {
     Graph graph = graph_create();
-    Graph* p_graph = &graph;
+    Graph *p_graph = &graph;
+    Graph **p_p_graph = &p_graph;
 
     int* vertices_indexes = graph_init_vertices_indexes();
 
@@ -304,16 +306,17 @@ int main() {
     //pointer to vertice with index 1
     Graph_vertice *v_1 = graph_get_vertice(p_graph, 1);
 
-    //added
+    //added 1 -> 2 with weight 4
     graph_add_edge(p_graph, 1, 2, 4);
-    //abort as graph is not a multigraph
+
+    //abort: this graph is not a multigraph
     // graph_add_edge(p_graph, 2, 1, 4);
 
     bool is_edge_erased = graph_erase_edge(p_graph, 1, 2);
 
     graph_list(p_graph);
 
-    // graph_free(p_graph);
+    graph_free(p_p_graph);
 
     return 0;
 }
