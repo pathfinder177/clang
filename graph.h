@@ -21,8 +21,8 @@ typedef struct {
     GHashTable *vertices_table;
 } Graph;
 
-int* graph_init_vertices_indexes();
 Graph graph_create();
+int* graph_init_vertices_indexes();
 void graph_free(Graph **);
 void graph_list(Graph *);
 

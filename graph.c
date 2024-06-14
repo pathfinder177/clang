@@ -253,16 +253,11 @@ void graph_free(Graph **self) {
 
 int* graph_init_vertices_indexes() {
     //static arr also can be used but not so explicit
-    int* arr = (int*)malloc(GRAPH_SIZE * sizeof(int));
-
-    if (arr == NULL) {
-        printf("Memory allocation failed!\n");
-        return NULL;
-    }
+    static int vertices_indexes[GRAPH_SIZE];
 
     for (int i = 0; i <= GRAPH_SIZE; i++) {
-        arr[i] = i;
+        vertices_indexes[i] = i;
     }
 
-    return arr;
+    return vertices_indexes;
 }
