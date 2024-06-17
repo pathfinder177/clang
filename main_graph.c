@@ -4,13 +4,9 @@ int main() {
     Graph graph = graph_create();
     Graph *p_graph = &graph;
     Graph **p_p_graph = &p_graph;
+    int graph_size = 5;
 
-    int* vertices_indexes = graph_init_vertices_indexes();
-
-    //vertices with indexes from 1 to 5
-    for (int i = 0; i <= GRAPH_SIZE; i++) {
-        graph_add_vertice(p_graph, &vertices_indexes[i]);
-    }
+    graph_init_vertices(p_graph, graph_size);
 
     //0,1,2,4,5
     graph_erase_vertice(p_graph, 3);

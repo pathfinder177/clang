@@ -22,7 +22,7 @@ typedef struct {
 } Graph;
 
 Graph graph_create();
-int* graph_init_vertices_indexes();
+void graph_init_vertices(Graph *, int);
 void graph_free(Graph **);
 void graph_list(Graph *);
 
