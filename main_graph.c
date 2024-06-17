@@ -4,7 +4,7 @@ int main() {
     Graph graph = graph_create();
     Graph *p_graph = &graph;
     Graph **p_p_graph = &p_graph;
-    int graph_size = 5;
+    int graph_size = 7;
 
     graph_init_vertices(p_graph, graph_size);
 

@@ -260,7 +260,7 @@ void graph_init_vertices(Graph *self, int graph_size) {
         abort();
     }
 
-    for (int i = 0; i <= graph_size; i++) {
+    for (int i = 0; i <= graph_size - 1; i++) {
         vertices_indexes[i] = i;
         graph_add_vertice(self, &vertices_indexes[i]);
     }
