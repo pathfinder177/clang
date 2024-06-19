@@ -1,11 +1,12 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include "graph.h"
 
 #define INIT_DISTANCE 100
 
 void graph_djikstra_set_weights(Graph*);
-static int*** graph_djikstra_init_distance_vector(Graph*, Graph_vertice*, int);
-int graph_djikstra(Graph*, Graph_vertice*, int); //FIXME to return the length of shortest path and shortest path in itself
+static int** graph_djikstra_init_distance_vector(Graph*, Graph_vertice*);
+int graph_djikstra(Graph*, Graph_vertice*); //FIXME to return the length of shortest path and shortest path in itself
 
 
 void graph_djikstra_set_weights(Graph* self) {
@@ -27,49 +28,63 @@ void graph_djikstra_set_weights(Graph* self) {
     graph_add_edge(self, 4, 5, 3);
 }
 
-static int*** graph_djikstra_init_distance_vector(Graph* self, Graph_vertice* start, int graph_size) {
-    int ROWS = 1;
-    int COLS = graph_size;
-    int INNER_ARRAY_SIZE = 2;
+static int** graph_djikstra_init_distance_vector(Graph* self, Graph_vertice* start) {
+    int key = start->index;
+    GList* indexes = g_hash_table_get_keys(self->vertices_table);
 
-    int ***distance_vector = (int ***)malloc(ROWS * sizeof(int **));
-    for (int i = 0; i < ROWS; i++) {
-        distance_vector[i] = (int **)malloc(COLS * sizeof(int *));
-        for (int j = 0; j < COLS; j++) {
-            distance_vector[i][j] = (int *)malloc(INNER_ARRAY_SIZE * sizeof(int));
+    int indexes_number = g_list_length(indexes); //external array
+    int priority_key_size = 2; // Fixed size of each inner array
+
+    // Allocate memory for the outer array
+    int **distance_vector = malloc(indexes_number * sizeof(int *));
+    if (distance_vector == NULL) {
+        perror("Failed to allocate memory for outer array");
+        abort();
+    }
+
+    // Allocate memory for each inner array
+    for (int i = 0; i < indexes_number; i++) {
+        distance_vector[i] = malloc(priority_key_size * sizeof(int));
+
+        if (distance_vector[i] == NULL) {
+            perror("Failed to allocate memory for inner array");
+            abort();
         }
     }
 
-    // Initialize the distance_vector with some values
-    for (int i = 0; i < ROWS; i++) {
-        for (int j = 0; j < COLS; j++) {
-            for (int k = 0; k < INNER_ARRAY_SIZE; k++) {
-                distance_vector[i][j][k] = i * COLS * INNER_ARRAY_SIZE + j * INNER_ARRAY_SIZE + k;
-            }
+    distance_vector[0][0] = 0;
+    distance_vector[0][1] = key;
+
+    for (int i = 1; i < indexes_number; i++) {
+        key = *((int *)(indexes->data));
+        if (key != start->index) {
+            // Initialize the inner array
+            distance_vector[i][0] = INIT_DISTANCE;
+            distance_vector[i][1] = key;
         }
+        indexes = indexes->next;
     }
 
-    // Print the distance_vector
-    for (int i = 0; i < ROWS; i++) {
-        for (int j = 0; j < COLS; j++) {
-            printf("distance_vector[%d][%d]: ", i, j);
-            for (int k = 0; k < INNER_ARRAY_SIZE; k++) {
-                printf("%d ", distance_vector[i][j][k]);
-            }
-            printf("\n");
+    // Example usage: print the contents of the dynamic array
+    for (int i = 0; i < indexes_number; i++) {
+        printf("Priority key %d: ", i);
+        for (int j = 0; j < priority_key_size; j++) {
+            printf("%d ", distance_vector[i][j]);
         }
+        printf("\n");
     }
 
     return distance_vector;
 }
 
-int graph_djikstra(Graph* self, Graph_vertice* start, int graph_size) {
+
+int graph_djikstra(Graph* self, Graph_vertice* start) {
     /*
     the shortest path to node 5 is 8 in this example:
     0 -(4)> 2 -(1)> 4 -(3)> 5 = 4+1+3 = 8
     */
 
-    int ***distance_vector = graph_djikstra_init_distance_vector(self, start, graph_size);
+    int **distance_vector = graph_djikstra_init_distance_vector(self, start);
 
     return 0;
 }
@@ -85,7 +100,7 @@ int main() {
     graph_djikstra_set_weights(p_graph);
 
     Graph_vertice *start = graph_get_vertice(p_graph, 0);
-    graph_djikstra(p_graph, start, graph_size);
+    graph_djikstra(p_graph, start);
 
     // graph_list(p_graph);
 
