@@ -22,7 +22,6 @@ int heap_pop(Heap *);
 void heap_print(Heap *);
 
 static void heap_realloc(Heap *);
-static void heap_pop_order(Heap *self);
 static void heap_heapify(Heap *);
 
 void heap_print(Heap* self) {
@@ -36,48 +35,41 @@ int heap_peek(Heap *self) {
     return self->array[0];
 }
 
-static void heap_pop_order(Heap *self) {
-    int heap_size = self->size;
-    int* heap_values = self->array;
-
-    int i, index, left, right, smallest, tmp;
-
-    for(i = 0; i <= (heap_size - 1) / 2; i++) {
-        index = i;
-
-        while(1) {
-            left = 2 * index + 1;
-            right = 2 * index + 2;
-            smallest = index;
-
-            if (left < heap_size && heap_values[left] < heap_values[smallest]) {
-                smallest = left;
-            }
-
-            if (right < heap_size && heap_values[right] < heap_values[smallest]) {
-                smallest = right;
-            }
-
-            if (smallest == index) {
-                break;
-            }
-
-            tmp = heap_values[index];
-            heap_values[index] = heap_values[smallest];
-            heap_values[smallest] = tmp;
-
-            index = smallest;
-
-        }
-    }
-}
-
 int heap_pop(Heap *self) {
     int popped_val = self->array[0];
     self->array[0] = self->array[self->size-1];
     self->size--;
 
-    heap_pop_order(self);
+    int heap_size = self->size;
+    int* heap_values = self->array;
+
+    int index, left, right, smallest, tmp;
+    index = 0;
+
+    //As only one node may be move down, the only cycle is sufficient
+    while(1) {
+        left = 2 * index + 1;
+        right = 2 * index + 2;
+        smallest = index;
+
+        if (left < heap_size && heap_values[left] < heap_values[smallest]) {
+            smallest = left;
+        }
+
+        if (right < heap_size && heap_values[right] < heap_values[smallest]) {
+            smallest = right;
+        }
+
+        if (smallest == index) {
+            break;
+        }
+
+        tmp = heap_values[index];
+        heap_values[index] = heap_values[smallest];
+        heap_values[smallest] = tmp;
+
+        index = smallest;
+        }
 
     return popped_val;
 }
