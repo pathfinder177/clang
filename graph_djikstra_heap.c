@@ -1,30 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-
-#define HEAP_MAX_SIZE 100
-#define HEAP_INIT_SIZE 10
-#define P_QUEUE_ELEMENT_SIZE 2
-
-/*
-pq based on min binary heap, e.g. 10,20,50,30,40,60,70
-heap keeps array of arrays where each element is int* array[2] = [priority, key]
-*/
-
-typedef struct {
-    int **p_queue;
-    int size;
-} Heap;
-
-Heap* heap_create();
-void heap_free(Heap *);
-
-void heap_push(Heap *, int *);
-int* heap_peek(Heap *);
-int* heap_pop(Heap *);
-void heap_print(Heap *);
-
-static void heap_realloc(Heap *);
-static void heap_heapify(Heap *);
+#include "graph_djikstra_heap.h"
 
 void heap_print(Heap* self) {
     for(int i = 0; i < self->size; i++) {
@@ -127,7 +101,7 @@ void heap_push(Heap *self, int* priority_key_arr) {
     //As only one node may be move down, the only cycle is sufficient
     //upsift
     while(1) {
-        heap_print(self);
+        // heap_print(self);
         left = 2 * index + 1;
         right = 2 * index + 2;
         smallest = index;
@@ -211,61 +185,8 @@ Heap* heap_create() {
         abort();
     }
 
-    // // Allocate memory for each inner array FIXME
-    // for (int i = 0; i < HEAP_INIT_SIZE; i++) {
-    //     p_queue[i] = (int *) malloc(P_QUEUE_ELEMENT_SIZE * sizeof(int));
-
-    //     if (p_queue[i] == NULL) {
-    //         perror("Failed to allocate memory for heap inner array");
-    //         abort();
-    //     }
-    // }
-
     heap->p_queue = p_queue;
     heap->size = 0;
 
     return heap;
-}
-
-int main() {
-    Heap *heap = heap_create();
-
-    //emulate djikstra's interaction with heap
-    //start vertice
-    int* start = (int *) malloc(P_QUEUE_ELEMENT_SIZE * sizeof(int)); //TODO make macro
-    start[0] = 0; //priority(distance)
-    start[1] = 0; //key
-
-    //step 1: push start vertice
-    heap_push(heap, start);
-
-    //step 2: pop vertice
-    int *popped_start = heap_pop(heap);
-
-    //step 3: get start neighbors and push them to heap
-    int* v2 = (int *) malloc(P_QUEUE_ELEMENT_SIZE * sizeof(int));
-    v2[0] = 4;
-    v2[1] = 2;
-    heap_push(heap, v2);
-
-    int* v1 = (int *) malloc(P_QUEUE_ELEMENT_SIZE * sizeof(int));
-    v1[0] = 3;
-    v1[1] = 1;
-    heap_push(heap, v1);
-
-    int* v3 = (int *) malloc(P_QUEUE_ELEMENT_SIZE * sizeof(int)); //FIXME
-    v3[0] = 2;
-    v3[1] = 3;
-    heap_push(heap, v3);
-
-    heap_print(heap);
-
-    //step 4: pop the closest vertice, if identical - by number of key
-    int *popped_closest = heap_pop(heap);
-
-    // step 5: repeat step 2. Continue while heap is not empty
-
-    heap_print(heap);
-
-    return 0;
 }
