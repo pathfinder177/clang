@@ -9,10 +9,89 @@
 
 void graph_djikstra_set_weights(Graph *);
 static int** graph_djikstra_init_distance_vector(Graph *, Graph_vertice *);
+static gint compare_ints(gconstpointer, gconstpointer);
+
+int** graph_djikstra(Graph*, Graph_vertice *);
 static bool graph_djikstra_update_distance_vector(int **, int *);
 static int graph_djikstra_get_weight_distance_vector(int **, int);
-int graph_djikstra(Graph*, Graph_vertice *); //FIXME to return the length of shortest path and shortest path in itself
 
+void graph_djikstra_backtrack(Graph *, int **, Graph_vertice *, Graph_vertice *);
+static bool graph_djikstra_backtrack_func(Graph *, Graph_vertice *, int, int);
+static Graph_vertice_neighbor* graph_djikstra_backtrack_func_get_neighbor(GPtrArray *, int *, int);
+
+static Graph_vertice_neighbor* graph_djikstra_backtrack_func_get_neighbor(GPtrArray *neighbors, int *visited_neighbors, int visited_neighbors_size) {
+    Graph_vertice_neighbor* self;
+
+    for (guint n = 0; n < neighbors->len; n++) {
+        self = g_ptr_array_index(neighbors, n);
+        for (int v_n = 0; v_n < visited_neighbors_size; v_n++) {
+            if(self == NULL) {
+                break;
+            }
+            if(visited_neighbors[v_n] == self->index) {
+                self = NULL;
+            }
+        }
+        if(self != NULL) {
+            return self;
+        }
+    }
+
+    return NULL;
+
+}
+
+static bool graph_djikstra_backtrack_func(Graph *self, Graph_vertice *start, int finish_index, int distance) {
+    printf("%d -> \n", start->index);
+
+    // int visited_neighbors[(finish_index - (start->index))];
+    int* visited_neighbors = (int *) calloc(start->neighbors->len, sizeof(int));
+    if (visited_neighbors == NULL) {
+        perror("visited_neighbors memory allocation failed\n");
+        abort();
+    }
+
+    Graph_vertice_neighbor *neighbor;
+    for (int i = 0; i < start->neighbors->len; i++) {
+        neighbor = graph_djikstra_backtrack_func_get_neighbor(start->neighbors, visited_neighbors, start->neighbors->len);
+        if(neighbor == NULL) {
+            return false;
+       }
+
+        int distance_neighbor_to_finish = distance - (neighbor->weight);
+
+        if ((distance_neighbor_to_finish == 0) && (neighbor->index == finish_index)) {
+            printf("%d\n", neighbor->index);
+            return true;
+        }
+        else if(distance_neighbor_to_finish < 0) {
+            visited_neighbors[i] = neighbor->index;
+            printf("v%d: distance is exceeded, trying other neighbors\n", neighbor->index);
+        }
+        else {
+            Graph_vertice *neighbor_vertice = graph_get_vertice(self, neighbor->index);
+
+            visited_neighbors[i] = neighbor->index;
+            bool is_path_found = graph_djikstra_backtrack_func(self, neighbor_vertice, finish_index, distance_neighbor_to_finish);
+
+            if(is_path_found) {
+                return true;
+            }
+        }
+
+    }
+    free(visited_neighbors);
+
+    return false;
+}
+
+void graph_djikstra_backtrack(Graph *self, int **distance_vector, Graph_vertice *start, Graph_vertice *finish) {
+    int distance = distance_vector[finish->index][0] - distance_vector[start->index][0];
+
+    printf("From v%d to v%d the shortest path is: \n", start->index, finish->index);
+
+    graph_djikstra_backtrack_func(self, start, finish->index, distance);
+}
 
 void graph_djikstra_set_weights(Graph *self) {
     //0 -(4)> 1
@@ -33,14 +112,22 @@ void graph_djikstra_set_weights(Graph *self) {
     graph_add_edge(self, 4, 5, 3);
 }
 
+static gint compare_ints(gconstpointer a, gconstpointer b) {
+    gint int_a = *(gint*)a;
+    gint int_b = *(gint*)b;
+
+    return (int_a > int_b) - (int_a < int_b);
+}
+
 static int** graph_djikstra_init_distance_vector(Graph *self, Graph_vertice *start) {
     int priority_key_size = 2; // Fixed size of each inner array FIXME
     int key = start->index;
 
     GList* indexes = g_hash_table_get_keys(self->vertices_table);
+    indexes = g_list_sort(indexes, compare_ints);
     int indexes_number = g_list_length(indexes); //external array
 
-    // Allocate memory for the outer array
+    // Allocate memory for the external array
     int **distance_vector = malloc(indexes_number * sizeof(int *));
     if (distance_vector == NULL) {
         perror("Failed to allocate memory for external array");
@@ -60,6 +147,9 @@ static int** graph_djikstra_init_distance_vector(Graph *self, Graph_vertice *sta
     distance_vector[0][0] = 0;
     distance_vector[0][1] = key;
 
+    //FIXME traverse indexes
+    indexes = indexes->next;
+
     for (int i = 1; i < indexes_number; i++) {
         key = *((int *)(indexes->data));
         if (key != start->index) {
@@ -71,13 +161,13 @@ static int** graph_djikstra_init_distance_vector(Graph *self, Graph_vertice *sta
     }
 
     // print FIXME to apart function
-    for (int i = 0; i < indexes_number; i++) {
-        printf("Priority key %d: ", i);
-        for (int j = 0; j < priority_key_size; j++) {
-            printf("%d ", distance_vector[i][j]);
-        }
-        printf("\n");
-    }
+    // for (int i = 0; i < indexes_number; i++) {
+    //     printf("Priority and key %d: ", i);
+    //     for (int j = 0; j < priority_key_size; j++) {
+    //         printf("%d ", distance_vector[i][j]);
+    //     }
+    //     printf("\n");
+    // }
 
     return distance_vector;
 }
@@ -110,7 +200,7 @@ static int graph_djikstra_get_weight_distance_vector(int **distance_vector, int 
     return 0;
 }
 
-int graph_djikstra(Graph* self, Graph_vertice* start) {
+int** graph_djikstra(Graph* self, Graph_vertice* start) {
     /*
     the shortest path to node 5 is 8 in this example:
     0 -(4)> 2 -(1)> 4 -(3)> 5 = 4+1+3 = 8
@@ -180,15 +270,15 @@ int graph_djikstra(Graph* self, Graph_vertice* start) {
     //FIXME
     }
 
-    for (int i = 0; i < 6; i++) {
-        printf("Distance index %d: ", i);
-        for (int j = 0; j < 2; j++) {
-            printf("%d ", distance_vector[i][j]);
-        }
-        printf("\n");
-    }
+    // for (int i = 0; i < 6; i++) {
+    //     printf("Distance index %d: ", i);
+    //     for (int j = 0; j < 2; j++) {
+    //         printf("%d ", distance_vector[i][j]);
+    //     }
+    //     printf("\n");
+    // }
 
-    return 0;
+    return distance_vector;
 }
 
 int main() {
@@ -202,11 +292,19 @@ int main() {
     graph_djikstra_set_weights(p_graph);
 
     Graph_vertice *start = graph_get_vertice(p_graph, 0);
-    graph_djikstra(p_graph, start);
+    int **distance_vector = graph_djikstra(p_graph, start);
 
-    // graph_list(p_graph);
+    //get shortest path from node 0 to node 5
+    Graph_vertice *finish = graph_get_vertice(p_graph, 5);
+
+    graph_djikstra_backtrack(p_graph, distance_vector, start, finish);
 
     graph_free(p_p_graph);
 
     return 0;
 }
+
+/*
+TODO
+cleaning up
+*/
