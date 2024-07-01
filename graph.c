@@ -253,6 +253,11 @@ void graph_free(Graph **self) {
 
 void graph_init_vertices(Graph *self, int graph_size) {
 
+    if (graph_size <= 0) {
+        perror("Number of vertices could not be <= 0");
+        abort();
+    }
+
     int* vertices_indexes = (int*)malloc(graph_size * sizeof(int));
 
     if (vertices_indexes == NULL) {
